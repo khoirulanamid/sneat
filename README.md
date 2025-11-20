@@ -13,12 +13,3 @@ Konfigurasi penting
 - `config/base_url.php` : base URL aplikasi.
 - `config/routes.php` : rute sederhana aplikasi.
 
-Keamanan
-- Jangan meng-commit file berisi kredensial (`.env`, `config/*local.php`, dsb.).
-- Jika sudah ter-push kredensial sensitif, saya bisa bantu menghapusnya dari riwayat Git.
-
-Kontribusi
-- Buat branch baru untuk fitur/bugfix, lalu buat pull request.
-
-Lisensi
-- Tambahkan file `LICENSE` jika ingin menerapkan lisensi tertentu.
