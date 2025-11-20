@@ -1,0 +1,39 @@
+# Recommended .gitignore for PHP projects
+
+# Composer
+/vendor/
+/composer.lock
+
+# Node
+/node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Environment files
+/.env
+.env.*
+
+# IDEs and editors
+/.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.cache
+tmp/
+cache/
+
+# Build artifacts
+/public/assets/vendor/
+
+# PHPStorm metadata
+/.phpstorm.meta.php
+
+# Ignore sensitive local config
+config/*.local.php
