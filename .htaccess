@@ -1,0 +1,24 @@
+RewriteEngine On
+
+# Adjust if the app is in a subfolder, e.g. /sneat/
+RewriteBase /
+
+# Let existing files/folders pass through
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Pretty routes
+RewriteRule ^$ index.php?page=dashboard [L,QSA]
+RewriteRule ^dashboard/?$ index.php?page=dashboard [L,QSA]
+RewriteRule ^dosen/?$ index.php?page=dosen/dosen [L,QSA]
+RewriteRule ^mahasiswa/?$ index.php?page=mahasiswa/mahasiswa [L,QSA]
+RewriteRule ^matakuliah/?$ index.php?page=matakuliah/matakuliah [L,QSA]
+RewriteRule ^krs/?$ index.php?page=krs/krs [L,QSA]
+RewriteRule ^khs/?$ index.php?page=khs/khs [L,QSA]
+RewriteRule ^ktm/?$ index.php?page=ktm/ktm [L,QSA]
+RewriteRule ^laporan/krs/?$ index.php?page=laporan/laporankrs [L,QSA]
+RewriteRule ^laporan/khs/?$ index.php?page=laporan/laporankhs [L,QSA]
+
+# Fallback: forward other paths to index with page param
+RewriteRule ^(.+)$ index.php?page=$1 [L,QSA]
