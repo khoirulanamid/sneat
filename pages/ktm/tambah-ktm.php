@@ -28,7 +28,7 @@ unset($_SESSION['tambah_ktm_error'], $_SESSION['tambah_ktm_old']);
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?php echo page_url('ktm/proses'); ?>">
+        <form method="POST" action="<?php echo page_url('ktm/proses'); ?>" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                 <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>
@@ -66,8 +66,9 @@ unset($_SESSION['tambah_ktm_error'], $_SESSION['tambah_ktm_old']);
                 </select>
             </div>
             <div class="mb-3">
-                <label for="foto_kartu" class="form-label">Foto KTM (URL / path)</label>
-                <input type="text" class="form-control" id="foto_kartu" name="foto_kartu" value="<?php echo htmlspecialchars($old['foto_kartu']); ?>" placeholder="contoh: uploads/ktm/12345.jpg">
+                <label for="foto_kartu" class="form-label">Foto KTM</label>
+                <input type="file" class="form-control" id="foto_kartu" name="foto_kartu" accept="image/*">
+                <div class="form-text">Opsional. Maksimal ~2MB, format jpg/png/webp.</div>
             </div>
             <div class="mb-3">
                 <label for="keterangan" class="form-label">Keterangan</label>

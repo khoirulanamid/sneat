@@ -12,7 +12,7 @@ $nomorKartu = trim($_POST['nomor_kartu'] ?? '');
 $tglTerbit = $_POST['tgl_terbit'] ?? '';
 $masaBerlaku = $_POST['masa_berlaku'] ?? '';
 $status = $_POST['status'] ?? 'Aktif';
-$fotoKartu = trim($_POST['foto_kartu'] ?? '');
+$fotoKartu = '';
 $keterangan = trim($_POST['keterangan'] ?? '');
 
 $allowedStatus = ['Aktif', 'Tidak Aktif', 'Hilang', 'Rusak'];
@@ -55,6 +55,40 @@ try {
     $cekNomor->execute([':nomor' => $nomorKartu]);
     if ($cekNomor->fetchColumn() > 0) {
         throw new RuntimeException('Nomor KTM sudah terdaftar.');
+    }
+
+    // Handle upload foto jika ada
+    if (isset($_FILES['foto_kartu']) && $_FILES['foto_kartu']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $file = $_FILES['foto_kartu'];
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            throw new RuntimeException('Upload foto gagal. Silakan coba lagi.');
+        }
+
+        $allowedExt = ['jpg', 'jpeg', 'png', 'webp'];
+        $maxSize = 2 * 1024 * 1024; // 2MB
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        if (!in_array($ext, $allowedExt, true)) {
+            throw new RuntimeException('Format foto harus jpg, jpeg, png, atau webp.');
+        }
+        if ($file['size'] > $maxSize) {
+            throw new RuntimeException('Ukuran foto maksimal 2MB.');
+        }
+
+        $uploadDir = __DIR__ . '/../../public/uploads/ktm/';
+        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true)) {
+            throw new RuntimeException('Gagal membuat folder upload.');
+        }
+
+        $newName = 'ktm-' . time() . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
+        $targetPath = $uploadDir . $newName;
+
+        if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+            throw new RuntimeException('Gagal menyimpan foto KTM.');
+        }
+
+        // Simpan path yang dapat diakses publik
+        $fotoKartu = 'public/uploads/ktm/' . $newName;
     }
 
     $stmt = $pdo->prepare(

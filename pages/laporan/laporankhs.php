@@ -1,11 +1,56 @@
 <?php
 include 'config/koneksi.php';
 
-$mahasiswaList = $pdo->query("SELECT id_mahasiswa, nim, nama FROM mahasiswa ORDER BY nama ASC")->fetchAll(PDO::FETCH_ASSOC);
+// Hanya mahasiswa yang sudah memiliki KHS
+$mahasiswaList = $pdo->query(
+    "SELECT DISTINCT m.id_mahasiswa, m.nim, m.nama
+     FROM khs k
+     JOIN mahasiswa m ON k.id_mahasiswa = m.id_mahasiswa
+     ORDER BY m.nama ASC"
+)->fetchAll(PDO::FETCH_ASSOC);
 
 $idMahasiswa = $_GET['id_mahasiswa'] ?? '';
 $semester = $_GET['semester'] ?? '';
 $tahunAjaran = $_GET['tahun_ajaran'] ?? '';
+
+$availableSemester = [];
+$availableTahunAjaran = [];
+$logoSrc = asset_url('public/assets/img/logo-unuha.png');
+
+// Endpoint ringan untuk memuat opsi semester/tahun ajaran ketika mahasiswa dipilih (AJAX)
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    // Bersihkan buffer agar respons JSON tidak tercampur markup layout
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    header('Content-Type: application/json');
+    $response = ['semester' => [], 'tahun_ajaran' => []];
+    $ajaxMahasiswa = $_GET['id_mahasiswa'] ?? '';
+
+    if ($ajaxMahasiswa) {
+        $stmtSem = $pdo->prepare("SELECT DISTINCT semester FROM khs WHERE id_mahasiswa = :id ORDER BY semester ASC");
+        $stmtSem->execute([':id' => $ajaxMahasiswa]);
+        $response['semester'] = $stmtSem->fetchAll(PDO::FETCH_COLUMN);
+
+        $stmtTh = $pdo->prepare("SELECT DISTINCT tahun_ajaran FROM khs WHERE id_mahasiswa = :id ORDER BY tahun_ajaran DESC");
+        $stmtTh->execute([':id' => $ajaxMahasiswa]);
+        $response['tahun_ajaran'] = $stmtTh->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    echo json_encode($response);
+    exit;
+}
+
+if ($idMahasiswa) {
+    $availableSemester = $pdo->prepare("SELECT DISTINCT semester FROM khs WHERE id_mahasiswa = :id ORDER BY semester ASC");
+    $availableSemester->execute([':id' => $idMahasiswa]);
+    $availableSemester = $availableSemester->fetchAll(PDO::FETCH_COLUMN);
+
+    $availableTahunAjaran = $pdo->prepare("SELECT DISTINCT tahun_ajaran FROM khs WHERE id_mahasiswa = :id ORDER BY tahun_ajaran DESC");
+    $availableTahunAjaran->execute([':id' => $idMahasiswa]);
+    $availableTahunAjaran = $availableTahunAjaran->fetchAll(PDO::FETCH_COLUMN);
+}
 
 $filters = [];
 $params = [];
@@ -86,26 +131,56 @@ $ipSemester = hitungIP($data);
 
 <div class="card mb-4">
     <div class="card-body">
-        <form method="GET" action="<?php echo page_url('laporan/laporankhs'); ?>">
+        <form method="GET" action="<?php echo page_url('laporan/laporankhs'); ?>" id="form-khs">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label" for="mahasiswa">Mahasiswa</label>
                     <select class="form-select" id="mahasiswa" name="id_mahasiswa" required>
-                        <option value="">Pilih Mahasiswa</option>
-                        <?php foreach ($mahasiswaList as $mhs) : ?>
-                            <option value="<?php echo $mhs['id_mahasiswa']; ?>" <?php echo ($idMahasiswa == $mhs['id_mahasiswa']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($mhs['nim'] . ' - ' . $mhs['nama']); ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <?php if (!$mahasiswaList) : ?>
+                            <option value="">Belum ada data KHS</option>
+                        <?php else : ?>
+                            <option value="">Pilih Mahasiswa</option>
+                            <?php foreach ($mahasiswaList as $mhs) : ?>
+                                <option value="<?php echo $mhs['id_mahasiswa']; ?>" <?php echo ($idMahasiswa == $mhs['id_mahasiswa']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($mhs['nim'] . ' - ' . $mhs['nama']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label" for="semester">Semester</label>
-                    <input type="number" class="form-control" id="semester" name="semester" min="1" max="14" value="<?php echo htmlspecialchars($semester); ?>" required>
+                    <select class="form-select" id="semester" name="semester" <?php echo $idMahasiswa ? '' : 'disabled'; ?> required>
+                        <?php if (!$idMahasiswa) : ?>
+                            <option value="">Pilih mahasiswa terlebih dahulu</option>
+                        <?php elseif (!$availableSemester) : ?>
+                            <option value="">Belum ada KHS untuk mahasiswa ini</option>
+                        <?php else : ?>
+                            <option value="">Pilih Semester</option>
+                            <?php foreach ($availableSemester as $sem) : ?>
+                                <option value="<?php echo $sem; ?>" <?php echo ($semester == $sem) ? 'selected' : ''; ?>>
+                                    Semester <?php echo htmlspecialchars($sem); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label" for="tahun">Tahun Ajaran</label>
-                    <input type="text" class="form-control" id="tahun" name="tahun_ajaran" placeholder="2024/2025" value="<?php echo htmlspecialchars($tahunAjaran); ?>" required>
+                    <select class="form-select" id="tahun" name="tahun_ajaran" <?php echo $idMahasiswa ? '' : 'disabled'; ?> required>
+                        <?php if (!$idMahasiswa) : ?>
+                            <option value="">Pilih mahasiswa terlebih dahulu</option>
+                        <?php elseif (!$availableTahunAjaran) : ?>
+                            <option value="">Belum ada KHS untuk mahasiswa ini</option>
+                        <?php else : ?>
+                            <option value="">Pilih Tahun Ajaran</option>
+                            <?php foreach ($availableTahunAjaran as $th) : ?>
+                                <option value="<?php echo htmlspecialchars($th); ?>" <?php echo ($tahunAjaran == $th) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($th); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
             </div>
             <div class="d-flex gap-2 mt-3">
@@ -122,19 +197,29 @@ $ipSemester = hitungIP($data);
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">Data KHS</h5>
                 <?php if ($data) : ?>
-                    <button type="button" class="btn btn-success btn-sm" id="btn-print-khs-laporan">Cetak PDF</button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-success btn-sm" id="btn-print-khs-laporan">Cetak PDF</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-print-khs-paper">Cetak Printer</button>
+                    </div>
                 <?php endif; ?>
             </div>
             <div id="laporan-khs">
                 <?php if ($mahasiswaInfo) : ?>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div><strong>Nama:</strong> <?php echo htmlspecialchars($mahasiswaInfo['nama'] ?? '-'); ?></div>
-                            <div><strong>NIM:</strong> <?php echo htmlspecialchars($mahasiswaInfo['nim'] ?? '-'); ?></div>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-3 mb-2 mb-md-0 d-flex">
+                            <img src="<?php echo $logoSrc; ?>" alt="Logo UNUHA" style="height: 64px; width: auto; border-radius: 6px; background: rgba(0,0,0,0.02); padding: 6px;">
                         </div>
-                        <div class="col-md-6">
-                            <div><strong>Jurusan:</strong> <?php echo htmlspecialchars($mahasiswaInfo['jurusan'] ?? '-'); ?></div>
-                            <div><strong>Semester/Tahun:</strong> <?php echo htmlspecialchars($semester . ' / ' . $tahunAjaran); ?></div>
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div><strong>Nama:</strong> <?php echo htmlspecialchars($mahasiswaInfo['nama'] ?? '-'); ?></div>
+                                    <div><strong>NIM:</strong> <?php echo htmlspecialchars($mahasiswaInfo['nim'] ?? '-'); ?></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div><strong>Jurusan:</strong> <?php echo htmlspecialchars($mahasiswaInfo['jurusan'] ?? '-'); ?></div>
+                                    <div><strong>Semester/Tahun:</strong> <?php echo htmlspecialchars($semester . ' / ' . $tahunAjaran); ?></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -186,6 +271,88 @@ $ipSemester = hitungIP($data);
     </div>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mahasiswaSelect = document.getElementById('mahasiswa');
+        const semesterSelect = document.getElementById('semester');
+        const tahunSelect = document.getElementById('tahun');
+        const initialMahasiswa = '<?php echo htmlspecialchars($idMahasiswa, ENT_QUOTES); ?>';
+        const currentSemester = '<?php echo htmlspecialchars($semester, ENT_QUOTES); ?>';
+        const currentTahun = '<?php echo htmlspecialchars($tahunAjaran, ENT_QUOTES); ?>';
+        const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (m) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[m]));
+
+        const resetSelect = (select, placeholder, disable = false) => {
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+            select.disabled = disable;
+        };
+
+        const populateSelect = (select, items, placeholder, selectedValue = '') => {
+            let options = `<option value="">${placeholder}</option>`;
+            items.forEach(item => {
+                const safeValue = escapeHtml(item);
+                const isSelected = item == selectedValue ? 'selected' : '';
+                const label = select.id === 'semester' ? 'Semester ' + safeValue : safeValue;
+                options += `<option value="${safeValue}" ${isSelected}>${label}</option>`;
+            });
+            select.innerHTML = options;
+            select.disabled = !items.length;
+        };
+
+        mahasiswaSelect.addEventListener('change', function() {
+            const id = this.value;
+            if (!id) {
+                resetSelect(semesterSelect, 'Pilih mahasiswa terlebih dahulu', true);
+                resetSelect(tahunSelect, 'Pilih mahasiswa terlebih dahulu', true);
+                return;
+            }
+
+            resetSelect(semesterSelect, 'Memuat semester...', true);
+            resetSelect(tahunSelect, 'Memuat tahun ajaran...', true);
+
+            const selectedSemester = id === initialMahasiswa ? currentSemester : '';
+            const selectedTahun = id === initialMahasiswa ? currentTahun : '';
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('ajax', '1');
+            url.searchParams.set('id_mahasiswa', id);
+
+            fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(response => response.json())
+                .then(data => {
+                    const semData = Array.isArray(data.semester) ? data.semester : [];
+                    const thData = Array.isArray(data.tahun_ajaran) ? data.tahun_ajaran : [];
+
+                    if (semData.length) {
+                        populateSelect(semesterSelect, semData, 'Pilih Semester', selectedSemester);
+                    } else {
+                        resetSelect(semesterSelect, 'Belum ada KHS untuk mahasiswa ini', true);
+                    }
+
+                    if (thData.length) {
+                        populateSelect(tahunSelect, thData, 'Pilih Tahun Ajaran', selectedTahun);
+                    } else {
+                        resetSelect(tahunSelect, 'Belum ada KHS untuk mahasiswa ini', true);
+                    }
+                })
+                .catch(() => {
+                    resetSelect(semesterSelect, 'Gagal memuat data', true);
+                    resetSelect(tahunSelect, 'Gagal memuat data', true);
+                });
+        });
+
+        // Otomatis isi ulang jika halaman sudah punya mahasiswa terpilih (mis. setelah submit)
+        if (mahasiswaSelect.value) {
+            mahasiswaSelect.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+
 <?php if ($idMahasiswa && $semester && $tahunAjaran && $data) : ?>
     <script>
         document.getElementById('btn-print-khs-laporan').addEventListener('click', function() {
@@ -199,5 +366,45 @@ $ipSemester = hitungIP($data);
             };
             html2pdf().set(opt).from(element).save();
         });
+
+        const btnPrintPaperKhs = document.getElementById('btn-print-khs-paper');
+        if (btnPrintPaperKhs) {
+            btnPrintPaperKhs.addEventListener('click', function() {
+                const area = document.getElementById('laporan-khs');
+                const logoHtml = '';
+                const style = `
+                    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 16px; }
+                    h5 { margin: 0 0 8px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #333; padding: 8px; font-size: 13px; }
+                    th { background: #f0f0f0; }
+                    .text-center { text-align: center; }
+                    .text-end { text-align: end; }
+                    .mb-3 { margin-bottom: 12px; }
+                    .row { display: flex; flex-wrap: wrap; margin: 0 -8px; }
+                    .col-md-6 { flex: 0 0 50%; max-width: 50%; padding: 0 8px; box-sizing: border-box; }
+                    .d-flex { display: flex; }
+                    .align-items-center { align-items: center; }
+                    .gap-2 { gap: 8px; }
+                `;
+                const win = window.open('', '_blank', 'width=900,height=700');
+                if (!win) {
+                    alert('Popup diblokir. Izinkan popup untuk mencetak.');
+                    return;
+                }
+                win.document.open();
+                win.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="utf-8"><title>Cetak KHS</title><style>${style}</style></head>
+                    <body>${area.outerHTML}</body>
+                    </html>
+                `);
+                win.document.close();
+                win.focus();
+                win.print();
+                setTimeout(() => win.close(), 500);
+            });
+        }
     </script>
 <?php endif; ?>

@@ -30,8 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
     $tglTerbit = $_POST['tgl_terbit'] ?? '';
     $masaBerlaku = $_POST['masa_berlaku'] ?? '';
     $status = $_POST['status'] ?? 'Aktif';
-    $fotoKartu = trim($_POST['foto_kartu'] ?? '');
     $keterangan = trim($_POST['keterangan'] ?? '');
+    $fotoKartuLama = trim($_POST['foto_kartu_lama'] ?? '');
 
     if (!in_array($status, $allowedStatus, true)) {
         $status = 'Aktif';
@@ -42,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
     $ktm['tgl_terbit'] = $tglTerbit;
     $ktm['masa_berlaku'] = $masaBerlaku;
     $ktm['status'] = $status;
-    $ktm['foto_kartu'] = $fotoKartu;
     $ktm['keterangan'] = $keterangan;
+    $ktm['foto_kartu'] = $fotoKartuLama;
 
     try {
         if (!$idMahasiswa || !$nomorKartu || !$tglTerbit || !$masaBerlaku) {
@@ -73,6 +73,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
             throw new RuntimeException('Nomor KTM sudah terdaftar.');
         }
 
+        // Handle upload foto jika ada penggantian
+        if (isset($_FILES['foto_kartu']) && $_FILES['foto_kartu']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $file = $_FILES['foto_kartu'];
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                throw new RuntimeException('Upload foto gagal. Silakan coba lagi.');
+            }
+
+            $allowedExt = ['jpg', 'jpeg', 'png', 'webp'];
+            $maxSize = 2 * 1024 * 1024; // 2MB
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+            if (!in_array($ext, $allowedExt, true)) {
+                throw new RuntimeException('Format foto harus jpg, jpeg, png, atau webp.');
+            }
+            if ($file['size'] > $maxSize) {
+                throw new RuntimeException('Ukuran foto maksimal 2MB.');
+            }
+
+            $uploadDir = __DIR__ . '/../../public/uploads/ktm/';
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true)) {
+                throw new RuntimeException('Gagal membuat folder upload.');
+            }
+
+            $newName = 'ktm-' . time() . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
+            $targetPath = $uploadDir . $newName;
+
+            if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+                throw new RuntimeException('Gagal menyimpan foto KTM.');
+            }
+
+            $ktm['foto_kartu'] = 'public/uploads/ktm/' . $newName;
+        }
+
         $update = $pdo->prepare(
             "UPDATE ktm
              SET id_mahasiswa = :id_mahasiswa,
@@ -91,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
             ':tgl_terbit' => $tglTerbit,
             ':masa_berlaku' => $masaBerlaku,
             ':status' => $status,
-            ':foto_kartu' => $fotoKartu,
+            ':foto_kartu' => $ktm['foto_kartu'],
             ':keterangan' => $keterangan,
             ':id' => $id,
         ]);
@@ -115,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
         <?php endif; ?>
 
         <?php if ($ktm) : ?>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                     <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>
@@ -150,8 +183,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="foto_kartu" class="form-label">Foto KTM (URL / path)</label>
-                    <input type="text" class="form-control" id="foto_kartu" name="foto_kartu" value="<?php echo htmlspecialchars($ktm['foto_kartu']); ?>">
+                    <label for="foto_kartu" class="form-label">Foto KTM</label>
+                    <?php if (!empty($ktm['foto_kartu'])) : ?>
+                        <div class="mb-2">
+                            <img src="<?php echo htmlspecialchars($ktm['foto_kartu']); ?>" alt="Foto KTM" class="img-fluid rounded border" style="max-width: 220px;">
+                        </div>
+                    <?php endif; ?>
+                    <input type="file" class="form-control" id="foto_kartu" name="foto_kartu" accept="image/*">
+                    <div class="form-text">Biarkan kosong jika tidak ingin mengganti. Maksimal ~2MB, format jpg/png/webp.</div>
+                    <input type="hidden" name="foto_kartu_lama" value="<?php echo htmlspecialchars($ktm['foto_kartu']); ?>">
                 </div>
                 <div class="mb-3">
                     <label for="keterangan" class="form-label">Keterangan</label>

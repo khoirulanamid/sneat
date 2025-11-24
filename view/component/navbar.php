@@ -32,6 +32,11 @@
                               data-show-count="true"
                               aria-label="Star themeselection/sneat-html-admin-template-free on GitHub">Star</a>
                       </li>
+                      <li class="nav-item me-3">
+                          <button class="btn btn-icon btn-outline-secondary" type="button" id="theme-toggle" title="Toggle tema">
+                              <i class="bx bx-moon" id="theme-toggle-icon"></i>
+                          </button>
+                      </li>
 
                       <!-- User -->
                       <li class="nav-item navbar-dropdown dropdown-user dropdown">

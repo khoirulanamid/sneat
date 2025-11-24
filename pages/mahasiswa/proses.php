@@ -13,6 +13,11 @@ $jenisKelamin = $_POST['jenis_kelamin'] ?? '';
 $jurusan = trim($_POST['jurusan'] ?? '');
 $tahunMasuk = trim($_POST['tahun_masuk'] ?? '');
 $status = $_POST['status'] ?? '';
+$tempatLahir = trim($_POST['tempat_lahir'] ?? '');
+$tanggalLahir = trim($_POST['tanggal_lahir'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$noHp = trim($_POST['no_hp'] ?? '');
+$alamat = trim($_POST['alamat'] ?? '');
 
 $old = [
     'nim' => $nim,
@@ -21,6 +26,11 @@ $old = [
     'jurusan' => $jurusan,
     'tahun_masuk' => $tahunMasuk,
     'status' => $status ?: 'Aktif',
+    'tempat_lahir' => $tempatLahir,
+    'tanggal_lahir' => $tanggalLahir,
+    'email' => $email,
+    'no_hp' => $noHp,
+    'alamat' => $alamat,
 ];
 
 $errorMessage = '';
@@ -34,8 +44,14 @@ if ($nim && $nama && $jenisKelamin && $jurusan && $tahunMasuk && $status) {
             $errorMessage = 'NIM sudah terdaftar, silakan gunakan NIM lain.';
         } else {
             $stmt = $pdo->prepare(
-                "INSERT INTO mahasiswa (nim, nama, jenis_kelamin, jurusan, tahun_masuk, status)
-                 VALUES (:nim, :nama, :jenis_kelamin, :jurusan, :tahun_masuk, :status)"
+                "INSERT INTO mahasiswa (
+                    nim, nama, jenis_kelamin, jurusan, tahun_masuk, status,
+                    tempat_lahir, tanggal_lahir, email, no_hp, alamat
+                )
+                VALUES (
+                    :nim, :nama, :jenis_kelamin, :jurusan, :tahun_masuk, :status,
+                    :tempat_lahir, :tanggal_lahir, :email, :no_hp, :alamat
+                )"
             );
 
             $stmt->execute([
@@ -45,6 +61,11 @@ if ($nim && $nama && $jenisKelamin && $jurusan && $tahunMasuk && $status) {
                 ':jurusan' => $jurusan,
                 ':tahun_masuk' => $tahunMasuk,
                 ':status' => $status,
+                ':tempat_lahir' => $tempatLahir ?: null,
+                ':tanggal_lahir' => $tanggalLahir ?: null,
+                ':email' => $email ?: null,
+                ':no_hp' => $noHp ?: null,
+                ':alamat' => $alamat ?: null,
             ]);
 
             unset($_SESSION['tambah_mahasiswa_error'], $_SESSION['tambah_mahasiswa_old']);

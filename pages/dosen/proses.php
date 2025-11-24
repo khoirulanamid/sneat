@@ -21,6 +21,10 @@ $email = trim($_POST['email'] ?? '');
 $noHp = trim($_POST['no_hp'] ?? '');
 $alamat = trim($_POST['alamat'] ?? '');
 $statusDosen = $_POST['status_dosen'] ?? '';
+$statusMap = ['Tetap', 'Kontrak', 'Luar', 'LB'];
+if ($statusDosen === 'LB') {
+    $statusDosen = 'Luar';
+}
 
 $old = [
     'nidn' => $nidn,
@@ -40,7 +44,7 @@ $old = [
 
 $errorMessage = '';
 
-if ($nidn && $namaDosen && $jenisKelamin && $pendidikanTerakhir && $keahlian && $statusDosen) {
+if ($nidn && $namaDosen && $jenisKelamin && $pendidikanTerakhir && $keahlian && $statusDosen && in_array($statusDosen, $statusMap, true)) {
     $jabatanAkademik = $jabatanAkademik ?: 'Asisten Ahli';
     $tanggalLahir = $tanggalLahir !== '' ? $tanggalLahir : null;
     try {
