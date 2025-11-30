@@ -64,12 +64,9 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('krs/edit-krs'); ?>?id=<?php echo urlencode($krs['id_krs']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
-                                    <form method="POST" action="<?php echo page_url('krs/delete-krs'); ?>" class="d-inline" onsubmit="return confirm('Yakin hapus data ini?');">
-                                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($krs['id_krs']); ?>">
-                                        <button type="submit" class="btn btn-icon btn-outline-danger btn-sm" title="Delete">
-                                            <i class="bx bx-trash"></i>
-                                        </button>
-                                    </form>
+                                    <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('krs/delete-krs'); ?>?id=<?php echo urlencode($krs['id_krs']); ?>">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

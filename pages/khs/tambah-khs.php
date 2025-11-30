@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include 'config/koneksi.php';
 
 $mahasiswaList = $pdo->query("SELECT id_mahasiswa, nim, nama FROM mahasiswa ORDER BY nama ASC")->fetchAll(PDO::FETCH_ASSOC);
@@ -29,7 +31,7 @@ unset($_SESSION['tambah_khs_error'], $_SESSION['tambah_khs_old']);
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?php echo page_url('khs/proses'); ?>">
+        <form method="POST" action="<?php echo $base_url; ?>pages/khs/proses.php">
             <div class="mb-3">
                 <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                 <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>

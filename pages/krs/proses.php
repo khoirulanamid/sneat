@@ -1,9 +1,11 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . page_url('krs/tambah-krs'));
+    header('Location: ../../index.php?page=krs/tambah-krs');
     exit;
 }
 
@@ -66,7 +68,7 @@ try {
     ]);
 
     unset($_SESSION['tambah_krs_error'], $_SESSION['tambah_krs_old']);
-    header('Location: ' . page_url('krs/krs'));
+    header('Location: ../../index.php?page=krs/krs');
     exit;
 } catch (Throwable $e) {
     $errorMessage = $e->getMessage();
@@ -75,5 +77,5 @@ try {
 $_SESSION['tambah_krs_error'] = $errorMessage;
 $_SESSION['tambah_krs_old'] = $old;
 
-header('Location: ' . page_url('krs/tambah-krs'));
+header('Location: ../../index.php?page=krs/tambah-krs');
 exit;

@@ -1,25 +1,19 @@
 <?php
-// Centralized base URL helper
-if (!isset($base_url) || !$base_url) {
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $scriptDir = isset($_SERVER['SCRIPT_NAME']) ? dirname($_SERVER['SCRIPT_NAME']) : '';
-    $scriptDir = rtrim($scriptDir, '/\\');
-    $base_url = $scheme . '://' . $host . ($scriptDir ? $scriptDir : '');
-    // Default fallback for CLI or missing server vars
-    if (!isset($_SERVER['HTTP_HOST'])) {
-        $base_url = 'http://localhost/sneat';
-    }
+// ...existing code...
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$script = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
+$base_url = $protocol . '://' . $host . $script . '/';
+
+// Pastikan juga ada konstanta BASE_URL untuk file yang mungkin memakai konstanta
+if (!defined('BASE_URL')) {
+    define('BASE_URL', $base_url);
 }
 
 if (!function_exists('asset_url')) {
-    /**
-     * Build full URL for assets relative to project public root.
-     */
     function asset_url(string $path = ''): string
     {
-        global $base_url;
-        return rtrim($base_url, '/') . '/' . ltrim($path, '/');
+        return rtrim(BASE_URL, '/') . '/' . ltrim($path, '/');
     }
 }
 

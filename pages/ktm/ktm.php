@@ -72,12 +72,9 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('ktm/edit-ktm'); ?>?id=<?php echo urlencode($ktm['id_ktm']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
-                                    <form method="POST" action="<?php echo page_url('ktm/delete-ktm'); ?>" class="d-inline" onsubmit="return confirm('Yakin hapus data ini?');">
-                                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($ktm['id_ktm']); ?>">
-                                        <button type="submit" class="btn btn-icon btn-outline-danger btn-sm" title="Delete">
-                                            <i class="bx bx-trash"></i>
-                                        </button>
-                                    </form>
+                                    <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('ktm/delete-ktm'); ?>?id=<?php echo urlencode($ktm['id_ktm']); ?>">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

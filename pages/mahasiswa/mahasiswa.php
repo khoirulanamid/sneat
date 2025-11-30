@@ -46,12 +46,9 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('mahasiswa/edit-mahasiswa'); ?>?nim=<?php echo urlencode($mahasiswa['nim']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
-                                    <form method="POST" action="<?php echo page_url('mahasiswa/delete-mahasiswa'); ?>" class="d-inline" onsubmit="return confirm('Yakin hapus data ini?');">
-                                        <input type="hidden" name="nim" value="<?php echo htmlspecialchars($mahasiswa['nim']); ?>">
-                                        <button type="submit" class="btn btn-icon btn-outline-danger btn-sm" title="Delete">
-                                            <i class="bx bx-trash"></i>
-                                        </button>
-                                    </form>
+                                    <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('mahasiswa/delete-mahasiswa'); ?>?nim=<?php echo urlencode($mahasiswa['nim']); ?>">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

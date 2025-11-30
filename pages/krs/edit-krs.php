@@ -80,8 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $krs) {
             ':id' => $id,
         ]);
 
-        header('Location: ' . page_url('krs/krs'));
-        exit;
+        $redirectUrl = page_url('krs/krs');
+        if (!headers_sent()) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        } else {
+            echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
+            exit;
+        }
     } catch (Throwable $e) {
         $errorMessage = $e->getMessage();
     }

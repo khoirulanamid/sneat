@@ -1,8 +1,11 @@
-<?php
-ob_start();
-include_once 'config/base_url.php';
-$assetPath = asset_url('public/assets/');
-$baseHref = rtrim($base_url, '/') . '/';
+﻿<?php
+// Pastikan base URL tersedia
+if (!defined('BASE_URL') || !function_exists('asset_url')) {
+    include_once __DIR__ . '/../../config/base_url.php';
+}
+
+$assetPath = BASE_URL . 'public/assets/';
+$baseHref = rtrim(BASE_URL, '/') . '/';
 ?>
 <!DOCTYPE html>
 
@@ -23,11 +26,11 @@ $baseHref = rtrim($base_url, '/') . '/';
     class="light-style layout-menu-fixed"
     dir="ltr"
     data-theme="theme-default"
-    data-assets-path="<?php echo $assetPath; ?>"
+    data-assets-path="<?= $assetPath ?>"
     data-template="vertical-menu-template-free">
 
 <head>
-    <base href="<?php echo $baseHref; ?>">
+    <base href="<?= $baseHref ?>">
     <meta charset="utf-8" />
     <meta
         name="viewport"
@@ -38,7 +41,7 @@ $baseHref = rtrim($base_url, '/') . '/';
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="<?php echo $assetPath; ?>img/favicon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="<?= $assetPath ?>img/favicon/favicon.ico" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -47,14 +50,14 @@ $baseHref = rtrim($base_url, '/') . '/';
         href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
         rel="stylesheet" />
     <!-- Datatable -->
-    <link rel="stylesheet" href="<?php echo $assetPath; ?>DataTables/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= $assetPath ?>DataTables/datatables.min.css" rel="stylesheet">
     <!-- Icons. Uncomment required icon fonts -->
-    <link rel="stylesheet" href="<?php echo $assetPath; ?>vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="<?= $assetPath ?>vendor/fonts/boxicons.css" />
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="<?php echo $assetPath; ?>vendor/css/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="<?php echo $assetPath; ?>vendor/css/theme-default.css" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="<?php echo $assetPath; ?>css/demo.css" />
+    <link rel="stylesheet" href="<?= $assetPath ?>vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="<?= $assetPath ?>vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="<?= $assetPath ?>css/demo.css" />
     <style>
         /* Custom dark mode */
         body.custom-dark {
@@ -169,18 +172,18 @@ $baseHref = rtrim($base_url, '/') . '/';
     </style>
 
     <!-- Vendors CSS -->
-    <link rel="stylesheet" href="<?php echo $assetPath; ?>vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="<?= $assetPath ?>vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-    <link rel="stylesheet" href="<?php echo $assetPath; ?>vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="<?= $assetPath ?>vendor/libs/apex-charts/apex-charts.css" />
 
     <!-- Page CSS -->
 
     <!-- Helpers -->
-    <script src="<?php echo $assetPath; ?>vendor/js/helpers.js"></script>
+    <script src="<?= $assetPath ?>vendor/js/helpers.js"></script>
 
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script src="<?php echo $assetPath; ?>js/config.js"></script>
+    <script src="<?= $assetPath ?>js/config.js"></script>
 </head>
 
 <body>
@@ -189,14 +192,14 @@ $baseHref = rtrim($base_url, '/') . '/';
         <div class="layout-container">
             <!-- Menu -->
 
-            <?php include 'view/component/sidebar.php'; ?>
+            <?php include __DIR__ . '/../component/sidebar.php'; ?>
             <!-- / Menu -->
 
             <!-- Layout container -->
             <div class="layout-page">
                 <!-- Navbar -->
 
-                <?php include 'view/component/navbar.php'; ?>
+                <?php include __DIR__ . '/../component/navbar.php'; ?>
 
                 <!-- / Navbar -->
 
@@ -209,22 +212,19 @@ $baseHref = rtrim($base_url, '/') . '/';
                         <?php include $content; ?>
                     </div>
 
+                    <!-- Footer -->
+                    <?php include __DIR__ . '/../component/footer.php'; ?>
+                    <!-- / Footer -->
+
+                    <div class="content-backdrop fade"></div>
                 </div>
-                <!-- / Content -->
-
-                <!-- Footer -->
-                <?php include 'view/component/footer.php'; ?>
-                <!-- / Footer -->
-
-                <div class="content-backdrop fade"></div>
+                <!-- Content wrapper -->
             </div>
-            <!-- Content wrapper -->
+            <!-- / Layout page -->
         </div>
-        <!-- / Layout page -->
-    </div>
 
-    <!-- Overlay -->
-    <div class="layout-overlay layout-menu-toggle"></div>
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
 
@@ -237,15 +237,15 @@ $baseHref = rtrim($base_url, '/') . '/';
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
-    <script src="<?php echo $assetPath; ?>vendor/libs/jquery/jquery.js"></script>
-    <script src="<?php echo $assetPath; ?>vendor/libs/popper/popper.js"></script>
-    <script src="<?php echo $assetPath; ?>vendor/js/bootstrap.js"></script>
-    <script src="<?php echo $assetPath; ?>vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="<?php echo $assetPath; ?>vendor/js/menu.js"></script>
+    <script src="<?= $assetPath ?>vendor/libs/jquery/jquery.js"></script>
+    <script src="<?= $assetPath ?>vendor/libs/popper/popper.js"></script>
+    <script src="<?= $assetPath ?>vendor/js/bootstrap.js"></script>
+    <script src="<?= $assetPath ?>vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="<?= $assetPath ?>vendor/js/menu.js"></script>
 
     <!-- endbuild -->
     <!-- Datatable -->
-    <script src="<?php echo $assetPath; ?>DataTables/datatables.min.js"></script>
+    <script src="<?= $assetPath ?>DataTables/datatables.min.js"></script>
     <script>
         $(document).ready(function() {
             const tableSelectors = ['#mahasiswa-table', '#dosen-table', '#matakuliah-table', '#krs-table', '#khs-table', '#ktm-table'];
@@ -263,17 +263,17 @@ $baseHref = rtrim($base_url, '/') . '/';
     </script>
 
     <!-- Di bagian bawah file layout utama atau di halaman laporan -->
-    <script src="<?php echo $assetPath; ?>vendor/libs/html2pdf/html2pdf.bundle.min.js"></script>
+    <script src="<?= $assetPath ?>vendor/libs/html2pdf/html2pdf.bundle.min.js"></script>
 
 
     <!-- Vendors JS -->
-    <script src="<?php echo $assetPath; ?>vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="<?= $assetPath ?>vendor/libs/apex-charts/apexcharts.js"></script>
 
     <!-- Page JS -->
-    <script src="<?php echo $assetPath; ?>js/dashboards-analytics.js"></script>
+    <script src="<?= $assetPath ?>js/dashboards-analytics.js"></script>
 
     <!-- Main JS -->
-    <script src="<?php echo $assetPath; ?>js/main.js"></script>
+    <script src="<?= $assetPath ?>js/main.js"></script>
     <script>
         (function() {
             const STORAGE_KEY = 'sneat-theme-mode';
@@ -305,4 +305,3 @@ $baseHref = rtrim($base_url, '/') . '/';
 </body>
 
 </html>
-<?php ob_end_flush(); ?>

@@ -102,6 +102,31 @@ if ($idMahasiswa) {
 }
 ?>
 
+<style id="krs-print-style">
+    /* Paksa warna kontras saat dicetak/pdf */
+    #laporan-krs {
+        color: #0f172a;
+        background: #ffffff;
+    }
+    #laporan-krs strong {
+        color: #0f172a;
+    }
+#laporan-krs table {
+    color: #0f172a;
+    background: #ffffff;
+}
+#laporan-krs table thead tr {
+        background: #0b1220;
+        color: #ffffff;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+}
+#laporan-krs table th,
+#laporan-krs table td {
+        border-color: #e2e8f0;
+}
+</style>
+
 <h4 class="fw-bold"><span class="text-muted fw-light">Laporan /</span> KRS</h4>
 
 <div class="card mb-4">

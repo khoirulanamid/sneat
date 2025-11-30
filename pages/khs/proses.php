@@ -1,9 +1,11 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . page_url('khs/tambah-khs'));
+    header('Location: ../../index.php?page=khs/tambah-khs');
     exit;
 }
 
@@ -80,7 +82,7 @@ try {
     ]);
 
     unset($_SESSION['tambah_khs_error'], $_SESSION['tambah_khs_old']);
-    header('Location: ' . page_url('khs/khs'));
+    header('Location: ../../index.php?page=khs/khs');
     exit;
 } catch (Throwable $e) {
     $errorMessage = $e->getMessage();
@@ -89,7 +91,7 @@ try {
 $_SESSION['tambah_khs_error'] = $errorMessage;
 $_SESSION['tambah_khs_old'] = $old;
 
-header('Location: ' . page_url('khs/tambah-khs'));
+header('Location: ../../index.php?page=khs/tambah-khs');
 exit;
 
 function convertGrade(float $nilai): string

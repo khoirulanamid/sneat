@@ -67,8 +67,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kodeMatkul !== '') {
                 ':kode_matkul' => $kodeMatkul,
             ]);
 
-            header("Location: " . page_url('matakuliah/matakuliah'));
-            exit;
+            $redirectUrl = page_url('matakuliah/matakuliah');
+            if (!headers_sent()) {
+                header("Location: " . $redirectUrl);
+                exit;
+            } else {
+                echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
+                exit;
+            }
         } catch (PDOException $e) {
             $errorMessage = 'Gagal memperbarui data: ' . $e->getMessage();
         }

@@ -127,6 +127,31 @@ function hitungIP(array $records): float
 $ipSemester = hitungIP($data);
 ?>
 
+<style id="khs-print-style">
+    /* Paksa warna kontras saat cetak/pdf */
+    #laporan-khs {
+        color: #0f172a;
+        background: #ffffff;
+    }
+    #laporan-khs strong {
+        color: #0f172a;
+    }
+#laporan-khs table {
+    color: #0f172a;
+    background: #ffffff;
+}
+#laporan-khs table thead tr {
+        background: #0b1220;
+        color: #ffffff;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+}
+#laporan-khs table th,
+#laporan-khs table td {
+        border-color: #e2e8f0;
+}
+</style>
+
 <h4 class="fw-bold"><span class="text-muted fw-light">Laporan /</span> KHS</h4>
 
 <div class="card mb-4">

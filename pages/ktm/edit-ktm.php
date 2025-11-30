@@ -129,7 +129,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
             ':id' => $id,
         ]);
 
-        header('Location: ' . page_url('ktm/ktm'));
+        $redirectUrl = page_url('ktm/ktm');
+        if (!headers_sent()) {
+            header('Location: ' . $redirectUrl);
+        } else {
+            // Jika layout sudah mengirim output, gunakan redirect via JS untuk menghindari warning header
+            echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
+        }
         exit;
     } catch (Throwable $e) {
         $errorMessage = $e->getMessage();

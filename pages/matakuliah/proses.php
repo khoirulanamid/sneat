@@ -1,9 +1,11 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: " . page_url('matakuliah/tambah-matakuliah'));
+    header("Location: ../../index.php?page=matakuliah/tambah-matakuliah");
     exit;
 }
 
@@ -47,7 +49,7 @@ if ($kodeMatkul && $namaMatkul && $sks && $semester && $jenisMatkul && $status) 
         ]);
 
         unset($_SESSION['tambah_matakuliah_error'], $_SESSION['tambah_matakuliah_old']);
-        header("Location: " . page_url('matakuliah/matakuliah'));
+        header("Location: ../../index.php?page=matakuliah/matakuliah");
         exit;
     } catch (PDOException $e) {
         $errorMessage = 'Gagal menambah data: ' . $e->getMessage();
@@ -59,5 +61,5 @@ if ($kodeMatkul && $namaMatkul && $sks && $semester && $jenisMatkul && $status) 
 $_SESSION['tambah_matakuliah_error'] = $errorMessage;
 $_SESSION['tambah_matakuliah_old'] = $old;
 
-header("Location: " . page_url('matakuliah/tambah-matakuliah'));
+header("Location: ../../index.php?page=matakuliah/tambah-matakuliah");
 exit;

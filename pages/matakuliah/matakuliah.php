@@ -51,12 +51,9 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('matakuliah/edit-matakuliah'); ?>?kode=<?php echo urlencode($matkul['kode_matkul']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
-                                    <form method="POST" action="<?php echo page_url('matakuliah/delete-matakuliah'); ?>" class="d-inline" onsubmit="return confirm('Yakin hapus data ini?');">
-                                        <input type="hidden" name="kode" value="<?php echo htmlspecialchars($matkul['kode_matkul']); ?>">
-                                        <button type="submit" class="btn btn-icon btn-outline-danger btn-sm" title="Delete">
-                                            <i class="bx bx-trash"></i>
-                                        </button>
-                                    </form>
+                                    <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('matakuliah/delete-matakuliah'); ?>?kode=<?php echo urlencode($matkul['kode_matkul']); ?>">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

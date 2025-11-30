@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include 'config/koneksi.php';
 
 // Ambil daftar dosen untuk dropdown pengampu
@@ -35,7 +37,7 @@ unset($_SESSION['tambah_matakuliah_error'], $_SESSION['tambah_matakuliah_old']);
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?php echo page_url('matakuliah/proses'); ?>">
+        <form method="POST" action="<?php echo $base_url; ?>pages/matakuliah/proses.php">
             <div class="mb-3">
                 <label for="kode_matkul" class="form-label">Kode Mata Kuliah</label>
                 <input type="text" class="form-control" id="kode_matkul" name="kode_matkul" value="<?php echo htmlspecialchars($old['kode_matkul']); ?>" required>

@@ -1,10 +1,17 @@
 <?php
-session_start();
+/**
+ * Endpoint proses tambah dosen (tanpa layout).
+ * Dipanggil langsung lewat action form: BASE_URL/pages/dosen/proses.php
+ */
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once __DIR__ . '/../../config/koneksi.php';
 
-// Only allow POST; otherwise, bounce back to the form.
+// Hanya izinkan POST; selain itu kembalikan ke form.
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: " . page_url('dosen/tambah-dosen'));
+    header("Location: ../../index.php?page=dosen/tambah-dosen");
     exit;
 }
 
@@ -98,7 +105,7 @@ if ($nidn && $namaDosen && $jenisKelamin && $pendidikanTerakhir && $keahlian && 
         ]);
 
         unset($_SESSION['tambah_dosen_error'], $_SESSION['tambah_dosen_old']);
-            header("Location: " . page_url('dosen/dosen'));
+        header("Location: ../../index.php?page=dosen/dosen");
         exit;
     } catch (PDOException $e) {
         $errorMessage = 'Gagal menambah data: ' . $e->getMessage();
@@ -110,5 +117,5 @@ if ($nidn && $namaDosen && $jenisKelamin && $pendidikanTerakhir && $keahlian && 
 $_SESSION['tambah_dosen_error'] = $errorMessage;
 $_SESSION['tambah_dosen_old'] = $old;
 
-header("Location: " . page_url('dosen/tambah-dosen'));
+header("Location: ../../index.php?page=dosen/tambah-dosen");
 exit;

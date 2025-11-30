@@ -70,8 +70,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $nim !== '') {
                 ':nim' => $nim,
             ]);
 
-            header("Location: " . page_url('mahasiswa/mahasiswa'));
-            exit;
+            $redirectUrl = page_url('mahasiswa/mahasiswa');
+            if (!headers_sent()) {
+                header("Location: " . $redirectUrl);
+                exit;
+            } else {
+                echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
+                exit;
+            }
         } catch (PDOException $e) {
             $errorMessage = 'Gagal memperbarui data: ' . $e->getMessage();
         }
