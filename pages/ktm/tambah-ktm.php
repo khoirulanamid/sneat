@@ -30,7 +30,7 @@ unset($_SESSION['tambah_ktm_error'], $_SESSION['tambah_ktm_old']);
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?php echo page_url('ktm/proses'); ?>" enctype="multipart/form-data">
+        <form method="POST" action="<?php echo $base_url; ?>pages/ktm/proses.php" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                 <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>

@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . page_url('ktm/tambah-ktm'));
+    header('Location: ../../index.php?page=ktm/tambah-ktm');
     exit;
 }
 
@@ -109,7 +109,12 @@ try {
     ]);
 
     unset($_SESSION['tambah_ktm_error'], $_SESSION['tambah_ktm_old']);
-    header('Location: ' . page_url('ktm/ktm'));
+    $redirect = '../../index.php?page=ktm/ktm';
+    if (!headers_sent()) {
+        header('Location: ' . $redirect);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($redirect) . ';</script>';
     exit;
 } catch (Throwable $e) {
     $errorMessage = $e->getMessage();
@@ -118,5 +123,10 @@ try {
 $_SESSION['tambah_ktm_error'] = $errorMessage;
 $_SESSION['tambah_ktm_old'] = $old;
 
-header('Location: ' . page_url('ktm/tambah-ktm'));
+$redirect = '../../index.php?page=ktm/tambah-ktm';
+if (!headers_sent()) {
+    header('Location: ' . $redirect);
+    exit;
+}
+echo '<script>window.location.href = ' . json_encode($redirect) . ';</script>';
 exit;
