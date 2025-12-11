@@ -2,7 +2,8 @@
 include 'config/koneksi.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$errorMessage = '';
+$errorMessage = $_SESSION['edit_dosen_error'] ?? '';
+unset($_SESSION['edit_dosen_error']);
 $dosen = null;
 
 if ($id > 0) {
@@ -13,92 +14,7 @@ if ($id > 0) {
     $errorMessage = 'ID tidak valid.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0) {
-    $nidn = trim($_POST['nidn'] ?? '');
-    $nip = trim($_POST['nip'] ?? '');
-    $namaDosen = trim($_POST['nama_dosen'] ?? '');
-    $jenisKelamin = $_POST['jenis_kelamin'] ?? '';
-    $tempatLahir = trim($_POST['tempat_lahir'] ?? '');
-    $tanggalLahir = trim($_POST['tanggal_lahir'] ?? '');
-    $keahlian = trim($_POST['keahlian'] ?? '');
-    $jabatanAkademik = trim($_POST['jabatan_akademik'] ?? '');
-    $pendidikanTerakhir = trim($_POST['pendidikan_terakhir'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $noHp = trim($_POST['no_hp'] ?? '');
-    $alamat = trim($_POST['alamat'] ?? '');
-    $statusDosen = $_POST['status_dosen'] ?? '';
-
-    $dosen = [
-        'id_dosen' => $id,
-        'nidn' => $nidn,
-        'nip' => $nip,
-        'nama_dosen' => $namaDosen,
-        'jenis_kelamin' => $jenisKelamin,
-        'tempat_lahir' => $tempatLahir,
-        'tanggal_lahir' => $tanggalLahir,
-        'keahlian' => $keahlian,
-        'jabatan_akademik' => $jabatanAkademik,
-        'pendidikan_terakhir' => $pendidikanTerakhir,
-        'email' => $email,
-        'no_hp' => $noHp,
-        'alamat' => $alamat,
-        'status_dosen' => $statusDosen,
-    ];
-
-    $tanggalLahirDb = $tanggalLahir !== '' ? $tanggalLahir : null;
-
-    if ($nidn && $namaDosen && $jenisKelamin && $pendidikanTerakhir && $keahlian && $statusDosen) {
-        try {
-            $update = $pdo->prepare(
-                "UPDATE dosen
-                 SET nidn = :nidn,
-                     nip = :nip,
-                     nama_dosen = :nama_dosen,
-                     jenis_kelamin = :jenis_kelamin,
-                     tempat_lahir = :tempat_lahir,
-                     tanggal_lahir = :tanggal_lahir,
-                     keahlian = :keahlian,
-                     jabatan_akademik = :jabatan_akademik,
-                     pendidikan_terakhir = :pendidikan_terakhir,
-                     email = :email,
-                     no_hp = :no_hp,
-                     alamat = :alamat,
-                     status_dosen = :status_dosen
-                 WHERE id_dosen = :id"
-            );
-
-            $update->execute([
-                ':nidn' => $nidn,
-                ':nip' => $nip ?: null,
-                ':nama_dosen' => $namaDosen,
-                ':jenis_kelamin' => $jenisKelamin,
-                ':tempat_lahir' => $tempatLahir ?: null,
-                ':tanggal_lahir' => $tanggalLahirDb,
-                ':keahlian' => $keahlian,
-                ':jabatan_akademik' => $jabatanAkademik,
-                ':pendidikan_terakhir' => $pendidikanTerakhir,
-                ':email' => $email ?: null,
-                ':no_hp' => $noHp ?: null,
-                ':alamat' => $alamat ?: null,
-                ':status_dosen' => $statusDosen,
-                ':id' => $id,
-            ]);
-
-            $redirectUrl = page_url('dosen/dosen');
-            if (!headers_sent()) {
-                header("Location: " . $redirectUrl);
-                exit;
-            } else {
-                echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
-                exit;
-            }
-        } catch (PDOException $e) {
-            $errorMessage = 'Gagal memperbarui data: ' . $e->getMessage();
-        }
-    } else {
-        $errorMessage = 'Semua field wajib diisi.';
-    }
-}
+// Proses update dipindah ke pages/dosen/proses-update.php
 ?>
 
 <h4 class="fw-bold"><span class="text-muted fw-light">Dosen /</span> Edit Dosen</h4>
@@ -111,8 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0) {
             </div>
         <?php endif; ?>
 
-        <?php if ($dosen) : ?>
-            <form method="POST">
+<?php if ($dosen) : ?>
+            <form method="POST" action="<?php echo page_url('dosen/proses-update'); ?>" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="<?php echo htmlspecialchars((string)$id); ?>">
+                <?php $fotoPreview = !empty($dosen['foto']) ? asset_url($dosen['foto']) : ''; ?>
                 <div class="row g-3">
                     <div class="col-lg-6">
                         <div class="p-3 border rounded h-100">
@@ -148,6 +66,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0) {
                             <div class="mb-0">
                                 <label for="alamat" class="form-label">Alamat</label>
                                 <textarea class="form-control" id="alamat" name="alamat" rows="3"><?php echo htmlspecialchars($dosen['alamat'] ?? ''); ?></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="foto">Foto Dosen (opsional)</label>
+                                <?php if (!empty($dosen['foto'])) : ?>
+                                    <div class="mb-2">
+                                        <img src="<?php echo htmlspecialchars($fotoPreview); ?>" alt="Foto Dosen" class="img-thumbnail" style="max-width: 180px;">
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+                                <div class="form-text">Maksimal ~2MB, format jpg/png/webp.</div>
+                                <input type="hidden" name="foto_lama" value="<?php echo htmlspecialchars($dosen['foto'] ?? ''); ?>">
                             </div>
                         </div>
                     </div>

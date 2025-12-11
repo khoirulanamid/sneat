@@ -48,7 +48,7 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-primary btn-sm" title="View" href="<?php echo page_url('matakuliah/view-matakuliah'); ?>?kode=<?php echo urlencode($matkul['kode_matkul']); ?>">
                                         <i class="bx bx-show-alt"></i>
                                     </a>
-                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('matakuliah/edit-matakuliah'); ?>?kode=<?php echo urlencode($matkul['kode_matkul']); ?>">
+                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('matakuliah/update-matakuliah'); ?>?kode=<?php echo urlencode($matkul['kode_matkul']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
                                     <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('matakuliah/delete-matakuliah'); ?>?kode=<?php echo urlencode($matkul['kode_matkul']); ?>">

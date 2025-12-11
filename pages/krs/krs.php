@@ -97,9 +97,13 @@ $no = 1;
                                     $id_mahasiswa = $group['id_mahasiswa'];
                                     $semester = $group['semester'];
                                     $tahun_ajaran = $group['tahun_ajaran'];
-                                    $view_url = page_url('krs/view-krs-group', ['id_mahasiswa' => $id_mahasiswa, 'semester' => $semester, 'tahun_ajaran' => $tahun_ajaran]);
-                                    $edit_url = page_url('krs/update-krs-group', ['id_mahasiswa' => $id_mahasiswa, 'semester' => $semester, 'tahun_ajaran' => $tahun_ajaran]);
-                                    $delete_url = page_url('krs/delete-krs-group', ['id_mahasiswa' => $id_mahasiswa, 'semester' => $semester, 'tahun_ajaran' => $tahun_ajaran]);
+                                    // Link to combined view which will handle group display/edit/delete
+                                    $baseView = page_url('krs/view-krs');
+                                    $query = '?id_mahasiswa=' . urlencode($id_mahasiswa) . '&semester=' . urlencode($semester) . '&tahun_ajaran=' . urlencode($tahun_ajaran);
+                                    $view_url = $baseView . $query;
+                                    // For simplicity, Edit and Delete also go to the group view where actions are available
+                                    $edit_url = $baseView . $query;
+                                    $delete_url = $baseView . $query;
                                     ?>
                                     <a class="btn btn-icon btn-outline-primary btn-sm" title="View Group" href="<?php echo $view_url; ?>">
                                         <i class="bx bx-show-alt"></i>

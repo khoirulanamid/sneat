@@ -43,7 +43,7 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-primary btn-sm" title="View" href="<?php echo page_url('mahasiswa/view-mahasiswa'); ?>?nim=<?php echo urlencode($mahasiswa['nim']); ?>">
                                         <i class="bx bx-show-alt"></i>
                                     </a>
-                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('mahasiswa/edit-mahasiswa'); ?>?nim=<?php echo urlencode($mahasiswa['nim']); ?>">
+                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('mahasiswa/update-mahasiswa'); ?>?nim=<?php echo urlencode($mahasiswa['nim']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
                                     <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('mahasiswa/delete-mahasiswa'); ?>?nim=<?php echo urlencode($mahasiswa['nim']); ?>">

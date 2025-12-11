@@ -31,7 +31,7 @@ unset($_SESSION['tambah_khs_error'], $_SESSION['tambah_khs_old']);
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?php echo $base_url; ?>pages/khs/proses.php">
+        <form method="POST" action="<?php echo page_url('khs/proses-tambah'); ?>">
             <div class="mb-3">
                 <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                 <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>

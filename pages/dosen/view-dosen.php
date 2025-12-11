@@ -5,11 +5,20 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $dosen = null;
 
 if ($id > 0) {
-    $stmt = $pdo->prepare("SELECT * FROM dosen WHERE id_dosen = :id");
-    $stmt->execute([':id' => $id]);
-    $dosen = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare("SELECT * FROM dosen WHERE id_dosen = :id");
+$stmt->execute([':id' => $id]);
+$dosen = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 $logoSrc = asset_url('public/assets/img/logo-unuha.png');
+$defaultFoto = asset_url('public/assets/img/illustrations/undraw_profile.svg');
+$fotoSrc = $defaultFoto;
+if (!empty($dosen['foto'])) {
+    $relative = ltrim($dosen['foto'], '/');
+    $absPath = __DIR__ . '/../../' . $relative;
+    if (file_exists($absPath)) {
+        $fotoSrc = asset_url($relative);
+    }
+}
 ?>
 
 <h4 class="fw-bold"><span class="text-muted fw-light">Dosen /</span> Detail Dosen</h4>
@@ -53,7 +62,7 @@ $logoSrc = asset_url('public/assets/img/logo-unuha.png');
             z-index: 1;
         }
         .detail-brand { display: flex; align-items: center; gap: 12px; }
-        .detail-logo { height: 48px; width: 48px; object-fit: contain; background: rgba(255,255,255,0.14); border-radius: 10px; padding: 6px; }
+        .detail-logo { height: 64px; width: 64px; object-fit: contain; background: rgba(255,255,255,0.14); border-radius: 10px; padding: 6px; }
         .detail-head .title { margin: 0; font-weight: 800; letter-spacing: 0.2px; color: #ffffff; }
         .detail-head .subtitle { margin: 2px 0 0; font-size: 13px; color: #e6f6e8; }
         .detail-chip {
@@ -64,6 +73,21 @@ $logoSrc = asset_url('public/assets/img/logo-unuha.png');
             font-size: 12px;
             letter-spacing: 0.4px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .detail-avatar {
+            height: 72px;
+            width: 72px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+            background: rgba(255,255,255,0.12);
+        }
+        .detail-avatar img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            display: block;
         }
         .detail-body {
             background: #fff;
@@ -107,14 +131,19 @@ $logoSrc = asset_url('public/assets/img/logo-unuha.png');
             <div class="detail-card mb-3">
                 <div class="detail-head">
                     <div class="detail-brand">
-                        <img src="<?php echo $logoSrc; ?>" alt="Logo UNUHA" class="detail-logo">
+                        <img src="<?php echo $logoSrc; ?>" alt="Logo Unuha" class="detail-logo">
                         <div>
                             <div class="subtitle">Universitas Nurul Huda</div>
                             <h5 class="title mb-0"><?php echo htmlspecialchars($dosen['nama_dosen']); ?></h5>
                             <div class="subtitle">NIDN: <?php echo htmlspecialchars($dosen['nidn']); ?></div>
                         </div>
                     </div>
-                    <div class="detail-chip">Dosen</div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="detail-avatar">
+                            <img src="<?php echo $fotoSrc; ?>" alt="Foto Dosen">
+                        </div>
+                        <div class="detail-chip">Dosen</div>
+                    </div>
                 </div>
                 <div class="detail-body">
                     <div class="detail-grid">

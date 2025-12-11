@@ -9,14 +9,36 @@ $jsRedirect = function (string $url) {
 
 $errorMessage = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-    $confirm = $_POST['confirm'] ?? '';
+# Support deleting a single entry (by id) or deleting a group (id_mahasiswa + semester + tahun_ajaran)
+$isGroup = false;
+$groupEntries = [];
+$id = isset($_POST['id']) ? (int)$_POST['id'] : (isset($_GET['id']) ? (int)$_GET['id'] : 0);
+$id_mahasiswa = isset($_GET['id_mahasiswa']) ? (int)$_GET['id_mahasiswa'] : null;
+$semester = isset($_GET['semester']) ? (int)$_GET['semester'] : null;
+$tahun_ajaran = isset($_GET['tahun_ajaran']) ? $_GET['tahun_ajaran'] : null;
 
-    if ($confirm === 'yes' && $id > 0) {
+if ($id_mahasiswa && $semester && $tahun_ajaran) {
+    $isGroup = true;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $confirm = $_POST['confirm'] ?? '';
+    if ($confirm === 'yes') {
         try {
-            $stmt = $pdo->prepare("DELETE FROM krs WHERE id_krs = :id");
-            $stmt->execute([':id' => $id]);
+            if (!empty($_POST['id']) && (int)$_POST['id'] > 0) {
+                $delId = (int)$_POST['id'];
+                $stmt = $pdo->prepare("DELETE FROM krs WHERE id_krs = :id");
+                $stmt->execute([':id' => $delId]);
+            } elseif (!empty($_POST['id_mahasiswa']) && !empty($_POST['semester']) && isset($_POST['tahun_ajaran'])) {
+                $stmt = $pdo->prepare(
+                    "DELETE FROM krs WHERE id_mahasiswa = :id_mahasiswa AND semester = :semester AND tahun_ajaran = :tahun_ajaran"
+                );
+                $stmt->execute([
+                    ':id_mahasiswa' => (int)$_POST['id_mahasiswa'],
+                    ':semester' => (int)$_POST['semester'],
+                    ':tahun_ajaran' => $_POST['tahun_ajaran'],
+                ]);
+            }
         } catch (PDOException $e) {
             $errorMessage = 'Gagal menghapus data: ' . $e->getMessage();
         }
@@ -25,22 +47,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $jsRedirect($redirectUrl);
 }
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if ($id <= 0) {
-    $jsRedirect($redirectUrl);
-}
-
-$stmt = $pdo->prepare(
-    "SELECT krs.id_krs, mahasiswa.nama, mahasiswa.nim, matakuliah.nama_matkul, matakuliah.kode_matkul
-     FROM krs
-     LEFT JOIN mahasiswa ON krs.id_mahasiswa = mahasiswa.id_mahasiswa
-     LEFT JOIN matakuliah ON krs.id_matkul = matakuliah.id_matkul
-     WHERE krs.id_krs = :id"
-);
-$stmt->execute([':id' => $id]);
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$row) {
-    $jsRedirect($redirectUrl);
+// Prepare data for confirmation view
+if ($isGroup) {
+    $stmt = $pdo->prepare(
+        "SELECT krs.id_krs, mahasiswa.nama, mahasiswa.nim, matakuliah.nama_matkul, matakuliah.kode_matkul
+         FROM krs
+         LEFT JOIN mahasiswa ON krs.id_mahasiswa = mahasiswa.id_mahasiswa
+         LEFT JOIN matakuliah ON krs.id_matkul = matakuliah.id_matkul
+         WHERE krs.id_mahasiswa = :id_mahasiswa AND krs.semester = :semester AND krs.tahun_ajaran = :tahun_ajaran"
+    );
+    $stmt->execute([
+        ':id_mahasiswa' => $id_mahasiswa,
+        ':semester' => $semester,
+        ':tahun_ajaran' => $tahun_ajaran,
+    ]);
+    $groupEntries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (empty($groupEntries)) {
+        $jsRedirect($redirectUrl);
+    }
+} else {
+    if ($id <= 0) {
+        $jsRedirect($redirectUrl);
+    }
+    $stmt = $pdo->prepare(
+        "SELECT krs.id_krs, mahasiswa.nama, mahasiswa.nim, matakuliah.nama_matkul, matakuliah.kode_matkul
+         FROM krs
+         LEFT JOIN mahasiswa ON krs.id_mahasiswa = mahasiswa.id_mahasiswa
+         LEFT JOIN matakuliah ON krs.id_matkul = matakuliah.id_matkul
+         WHERE krs.id_krs = :id"
+    );
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$row) {
+        $jsRedirect($redirectUrl);
+    }
 }
 ?>
 <!DOCTYPE html>

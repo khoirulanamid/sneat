@@ -2,7 +2,8 @@
 include 'config/koneksi.php';
 
 $kodeMatkul = isset($_GET['kode']) ? trim($_GET['kode']) : '';
-$errorMessage = '';
+$errorMessage = $_SESSION['edit_matkul_error'] ?? '';
+unset($_SESSION['edit_matkul_error']);
 $matakuliah = null;
 
 // Ambil daftar dosen untuk dropdown pengampu
@@ -15,73 +16,16 @@ try {
 }
 
 if ($kodeMatkul !== '') {
-    $stmt = $pdo->prepare(
-        "SELECT * FROM matakuliah WHERE kode_matkul = :kode_matkul LIMIT 1"
-    );
-    $stmt->execute([':kode_matkul' => $kodeMatkul]);
-    $matakuliah = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare(
+    "SELECT * FROM matakuliah WHERE kode_matkul = :kode_matkul LIMIT 1"
+);
+$stmt->execute([':kode_matkul' => $kodeMatkul]);
+$matakuliah = $stmt->fetch(PDO::FETCH_ASSOC);
 } else {
     $errorMessage = 'Kode mata kuliah tidak valid.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kodeMatkul !== '') {
-    $namaMatkul = trim($_POST['nama_matkul'] ?? '');
-    $sks = trim($_POST['sks'] ?? '');
-    $semester = trim($_POST['semester'] ?? '');
-    $idDosen = $_POST['id_dosen'] ?? '';
-    $jenisMatkul = trim($_POST['jenis_matkul'] ?? '');
-    $status = $_POST['status'] ?? '';
-
-    $idDosen = $idDosen === '' ? null : $idDosen;
-
-    $matakuliah = [
-        'kode_matkul' => $kodeMatkul,
-        'nama_matkul' => $namaMatkul,
-        'sks' => $sks,
-        'semester' => $semester,
-        'id_dosen' => $idDosen,
-        'jenis_matkul' => $jenisMatkul,
-        'status' => $status,
-    ];
-
-    if ($namaMatkul && $sks && $semester && $jenisMatkul && $status) {
-        try {
-            $update = $pdo->prepare(
-                "UPDATE matakuliah
-                 SET nama_matkul = :nama_matkul,
-                     sks = :sks,
-                     semester = :semester,
-                     id_dosen = :id_dosen,
-                     jenis_matkul = :jenis_matkul,
-                     status = :status
-                 WHERE kode_matkul = :kode_matkul"
-            );
-
-            $update->execute([
-                ':nama_matkul' => $namaMatkul,
-                ':sks' => $sks,
-                ':semester' => $semester,
-                ':id_dosen' => $idDosen,
-                ':jenis_matkul' => $jenisMatkul,
-                ':status' => $status,
-                ':kode_matkul' => $kodeMatkul,
-            ]);
-
-            $redirectUrl = page_url('matakuliah/matakuliah');
-            if (!headers_sent()) {
-                header("Location: " . $redirectUrl);
-                exit;
-            } else {
-                echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
-                exit;
-            }
-        } catch (PDOException $e) {
-            $errorMessage = 'Gagal memperbarui data: ' . $e->getMessage();
-        }
-    } else {
-        $errorMessage = 'Semua field wajib diisi (dosen pengampu opsional).';
-    }
-}
+// Proses update dipindah ke pages/matakuliah/proses-update.php
 ?>
 
 <h4 class="fw-bold"><span class="text-muted fw-light">Mata Kuliah /</span> Edit Mata Kuliah</h4>
@@ -95,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $kodeMatkul !== '') {
         <?php endif; ?>
 
         <?php if ($matakuliah) : ?>
-            <form method="POST">
+            <form method="POST" action="<?php echo page_url('matakuliah/proses-update'); ?>">
+                <input type="hidden" name="kode_matkul" value="<?php echo htmlspecialchars($kodeMatkul); ?>">
                 <div class="mb-3">
                     <label for="kode_matkul" class="form-label">Kode Mata Kuliah</label>
                     <input type="text" class="form-control" id="kode_matkul" name="kode_matkul" value="<?php echo htmlspecialchars($matakuliah['kode_matkul'] ?? ''); ?>" disabled>

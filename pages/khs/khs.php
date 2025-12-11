@@ -63,7 +63,7 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-primary btn-sm" title="View" href="<?php echo page_url('khs/view-khs'); ?>?id=<?php echo urlencode($khs['id_khs']); ?>">
                                         <i class="bx bx-show-alt"></i>
                                     </a>
-                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('khs/edit-khs'); ?>?id=<?php echo urlencode($khs['id_khs']); ?>">
+                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('khs/update-khs'); ?>?id=<?php echo urlencode($khs['id_khs']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
                                     <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('khs/delete-khs'); ?>?id=<?php echo urlencode($khs['id_khs']); ?>">

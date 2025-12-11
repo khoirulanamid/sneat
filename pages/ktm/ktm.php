@@ -69,7 +69,7 @@ $no = 1;
                                     <a class="btn btn-icon btn-outline-primary btn-sm" title="View" href="<?php echo page_url('ktm/view-ktm'); ?>?id=<?php echo urlencode($ktm['id_ktm']); ?>">
                                         <i class="bx bx-show-alt"></i>
                                     </a>
-                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('ktm/edit-ktm'); ?>?id=<?php echo urlencode($ktm['id_ktm']); ?>">
+                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('ktm/update-ktm'); ?>?id=<?php echo urlencode($ktm['id_ktm']); ?>">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
                                     <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?php echo page_url('ktm/delete-ktm'); ?>?id=<?php echo urlencode($ktm['id_ktm']); ?>">

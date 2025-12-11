@@ -10,7 +10,7 @@
                 </a>
             </div>
             <div class="card-body">
-                <form action="<?= $base_url ?>pages/dosen/proses.php" method="POST">
+                <form action="<?= page_url('dosen/proses-tambah'); ?>" method="POST" enctype="multipart/form-data">
                     <div class="row">
                         <!-- Kolom Kiri -->
                         <div class="col-md-6">
@@ -45,6 +45,11 @@
                             <div class="mb-3">
                                 <label class="form-label" for="alamat">Alamat</label>
                                 <textarea id="alamat" name="alamat" class="form-control" placeholder="Alamat lengkap"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="foto">Foto Dosen (opsional)</label>
+                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+                                <div class="form-text">Maksimal ~2MB, format jpg/png/webp.</div>
                             </div>
                         </div>
 

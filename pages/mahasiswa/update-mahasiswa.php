@@ -13,78 +13,7 @@ if ($nim !== '') {
     $errorMessage = 'NIM tidak valid.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $nim !== '') {
-    $nama = trim($_POST['nama'] ?? '');
-    $jenisKelamin = $_POST['jenis_kelamin'] ?? '';
-    $jurusan = trim($_POST['jurusan'] ?? '');
-    $tahunMasuk = trim($_POST['tahun_masuk'] ?? '');
-    $status = $_POST['status'] ?? '';
-    $tempatLahir = trim($_POST['tempat_lahir'] ?? '');
-    $tanggalLahir = trim($_POST['tanggal_lahir'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $noHp = trim($_POST['no_hp'] ?? '');
-    $alamat = trim($_POST['alamat'] ?? '');
-
-    $mahasiswa = [
-        'nim' => $nim,
-        'nama' => $nama,
-        'jenis_kelamin' => $jenisKelamin,
-        'jurusan' => $jurusan,
-        'tahun_masuk' => $tahunMasuk,
-        'status' => $status,
-        'tempat_lahir' => $tempatLahir,
-        'tanggal_lahir' => $tanggalLahir,
-        'email' => $email,
-        'no_hp' => $noHp,
-        'alamat' => $alamat,
-    ];
-
-    if ($nama && $jenisKelamin && $jurusan && $tahunMasuk && $status) {
-        try {
-            $update = $pdo->prepare(
-                "UPDATE mahasiswa
-                 SET nama = :nama,
-                     jenis_kelamin = :jenis_kelamin,
-                     jurusan = :jurusan,
-                     tahun_masuk = :tahun_masuk,
-                     status = :status,
-                     tempat_lahir = :tempat_lahir,
-                     tanggal_lahir = :tanggal_lahir,
-                     email = :email,
-                     no_hp = :no_hp,
-                     alamat = :alamat
-                 WHERE nim = :nim"
-            );
-
-            $update->execute([
-                ':nama' => $nama,
-                ':jenis_kelamin' => $jenisKelamin,
-                ':jurusan' => $jurusan,
-                ':tahun_masuk' => $tahunMasuk,
-                ':status' => $status,
-                ':tempat_lahir' => $tempatLahir ?: null,
-                ':tanggal_lahir' => $tanggalLahir ?: null,
-                ':email' => $email ?: null,
-                ':no_hp' => $noHp ?: null,
-                ':alamat' => $alamat ?: null,
-                ':nim' => $nim,
-            ]);
-
-            $redirectUrl = page_url('mahasiswa/mahasiswa');
-            if (!headers_sent()) {
-                header("Location: " . $redirectUrl);
-                exit;
-            } else {
-                echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
-                exit;
-            }
-        } catch (PDOException $e) {
-            $errorMessage = 'Gagal memperbarui data: ' . $e->getMessage();
-        }
-    } else {
-        $errorMessage = 'Semua field wajib diisi.';
-    }
-}
+// Proses update dipindah ke pages/mahasiswa/proses-update.php
 ?>
 
 <h4 class="fw-bold"><span class="text-muted fw-light">Mahasiswa /</span> Edit Mahasiswa</h4>
@@ -98,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $nim !== '') {
         <?php endif; ?>
 
         <?php if ($mahasiswa) : ?>
-            <form method="POST">
+            <form method="POST" action="<?php echo page_url('mahasiswa/proses-update'); ?>">
+                <input type="hidden" name="nim" value="<?php echo htmlspecialchars($nim); ?>">
                 <div class="row g-3">
                     <div class="col-lg-6">
                         <div class="p-3 border rounded h-100">

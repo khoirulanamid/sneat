@@ -31,7 +31,7 @@ unset($_SESSION['tambah_mahasiswa_error'], $_SESSION['tambah_mahasiswa_old']);
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?php echo $base_url; ?>pages/mahasiswa/proses.php">
+        <form method="POST" action="<?php echo page_url('mahasiswa/proses-tambah'); ?>">
             <div class="row g-3">
                 <div class="col-lg-6">
                     <div class="p-3 border rounded h-100">

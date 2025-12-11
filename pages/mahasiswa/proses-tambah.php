@@ -5,7 +5,12 @@ if (session_status() === PHP_SESSION_NONE) {
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: ../../index.php?page=mahasiswa/tambah-mahasiswa");
+    $redir = '../../index.php?page=mahasiswa/tambah-mahasiswa';
+    if (!headers_sent()) {
+        header("Location: " . $redir);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($redir) . ';</script>';
     exit;
 }
 
@@ -71,7 +76,12 @@ if ($nim && $nama && $jenisKelamin && $jurusan && $tahunMasuk && $status) {
             ]);
 
             unset($_SESSION['tambah_mahasiswa_error'], $_SESSION['tambah_mahasiswa_old']);
-            header("Location: ../../index.php?page=mahasiswa/mahasiswa");
+            $ok = '../../index.php?page=mahasiswa/mahasiswa';
+            if (!headers_sent()) {
+                header("Location: " . $ok);
+                exit;
+            }
+            echo '<script>window.location.href = ' . json_encode($ok) . ';</script>';
             exit;
         }
     } catch (PDOException $e) {
@@ -84,5 +94,10 @@ if ($nim && $nama && $jenisKelamin && $jurusan && $tahunMasuk && $status) {
 $_SESSION['tambah_mahasiswa_error'] = $errorMessage;
 $_SESSION['tambah_mahasiswa_old'] = $old;
 
-header("Location: ../../index.php?page=mahasiswa/tambah-mahasiswa");
+$redir = '../../index.php?page=mahasiswa/tambah-mahasiswa';
+if (!headers_sent()) {
+    header("Location: " . $redir);
+    exit;
+}
+echo '<script>window.location.href = ' . json_encode($redir) . ';</script>';
 exit;

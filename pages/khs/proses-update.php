@@ -5,10 +5,16 @@ if (session_status() === PHP_SESSION_NONE) {
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../../index.php?page=khs/tambah-khs');
+    $redir = page_url('khs/khs');
+    if (!headers_sent()) {
+        header('Location: ' . $redir);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($redir) . ';</script>';
     exit;
 }
 
+$id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 $idMahasiswa = $_POST['id_mahasiswa'] ?? '';
 $idMatkul = $_POST['id_matkul'] ?? '';
 $semester = trim($_POST['semester'] ?? '');
@@ -16,26 +22,15 @@ $tahunAjaran = trim($_POST['tahun_ajaran'] ?? '');
 $nilaiAngka = trim($_POST['nilai_angka'] ?? '');
 $status = $_POST['status'] ?? 'Lulus';
 $catatan = trim($_POST['catatan'] ?? '');
-
 $allowedStatus = ['Lulus', 'Tidak Lulus', 'Remedial'];
 if (!in_array($status, $allowedStatus, true)) {
     $status = 'Lulus';
 }
 
-$old = [
-    'id_mahasiswa' => $idMahasiswa,
-    'id_matkul' => $idMatkul,
-    'semester' => $semester,
-    'tahun_ajaran' => $tahunAjaran,
-    'nilai_angka' => $nilaiAngka,
-    'status' => $status,
-    'catatan' => $catatan,
-];
-
-$errorMessage = '';
+$redirect = page_url('khs/update-khs') . '?id=' . urlencode((string)$id);
 
 try {
-    if (!$idMahasiswa || !$idMatkul || !$semester || !$tahunAjaran || $nilaiAngka === '') {
+    if (!$id || !$idMahasiswa || !$idMatkul || !$semester || !$tahunAjaran || $nilaiAngka === '') {
         throw new RuntimeException('Semua field wajib diisi.');
     }
 
@@ -65,12 +60,20 @@ try {
 
     $nilaiHuruf = convertGrade((float)$nilaiAngka);
 
-    $stmt = $pdo->prepare(
-        "INSERT INTO khs (id_mahasiswa, id_matkul, semester, tahun_ajaran, nilai_angka, nilai_huruf, status, catatan)
-         VALUES (:id_mahasiswa, :id_matkul, :semester, :tahun_ajaran, :nilai_angka, :nilai_huruf, :status, :catatan)"
+    $update = $pdo->prepare(
+        "UPDATE khs
+         SET id_mahasiswa = :id_mahasiswa,
+             id_matkul = :id_matkul,
+             semester = :semester,
+             tahun_ajaran = :tahun_ajaran,
+             nilai_angka = :nilai_angka,
+             nilai_huruf = :nilai_huruf,
+             status = :status,
+             catatan = :catatan
+         WHERE id_khs = :id"
     );
 
-    $stmt->execute([
+    $update->execute([
         ':id_mahasiswa' => $idMahasiswa,
         ':id_matkul' => $idMatkul,
         ':semester' => (int)$semester,
@@ -79,20 +82,25 @@ try {
         ':nilai_huruf' => $nilaiHuruf,
         ':status' => $status,
         ':catatan' => $catatan,
+        ':id' => $id,
     ]);
 
-    unset($_SESSION['tambah_khs_error'], $_SESSION['tambah_khs_old']);
-    header('Location: ../../index.php?page=khs/khs');
+    $ok = page_url('khs/khs');
+    if (!headers_sent()) {
+        header('Location: ' . $ok);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($ok) . ';</script>';
     exit;
 } catch (Throwable $e) {
-    $errorMessage = $e->getMessage();
+    $_SESSION['edit_khs_error'] = $e->getMessage();
+    if (!headers_sent()) {
+        header('Location: ' . $redirect);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($redirect) . ';</script>';
+    exit;
 }
-
-$_SESSION['tambah_khs_error'] = $errorMessage;
-$_SESSION['tambah_khs_old'] = $old;
-
-header('Location: ../../index.php?page=khs/tambah-khs');
-exit;
 
 function convertGrade(float $nilai): string
 {

@@ -248,7 +248,45 @@ $baseHref = rtrim(BASE_URL, '/') . '/';
     <script src="<?= $assetPath ?>DataTables/datatables.min.js"></script>
     <script>
         $(document).ready(function() {
-            const tableSelectors = ['#mahasiswa-table', '#dosen-table', '#matakuliah-table', '#krs-table', '#khs-table', '#ktm-table'];
+            function format(details) {
+                let table = '<table class="table table-sm"><thead><tr><th>Mata Kuliah</th><th>Status</th><th>Dicatat Pada</th><th>Aksi</th></tr></thead><tbody>';
+                details.forEach(function(krs) {
+                    let statusBadge = krs.status === 'Disetujui' ? 'success' : (krs.status === 'Ditolak' ? 'danger' : 'warning');
+                    let recordedAt = krs.tanggal_pengisian ? new Date(krs.tanggal_pengisian).toLocaleString('id-ID') : '-';
+                    let viewUrl = `<?php echo rtrim(BASE_URL, '/'); ?>/index.php?page=krs/view-krs&id=${krs.id_krs}`;
+                    let editUrl = `<?php echo rtrim(BASE_URL, '/'); ?>/index.php?page=krs/update-krs&id=${krs.id_krs}`;
+                    let deleteUrl = `<?php echo rtrim(BASE_URL, '/'); ?>/index.php?page=krs/delete-krs&id=${krs.id_krs}`;
+
+                    table += `
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">${krs.nama_matkul || '-'}</div>
+                                <small class="text-muted">${krs.kode_matkul || ''}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-label-${statusBadge}">${krs.status}</span>
+                            </td>
+                            <td>${recordedAt}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a class="btn btn-icon btn-outline-primary btn-sm" title="View" href="${viewUrl}">
+                                        <i class="bx bx-show-alt"></i>
+                                    </a>
+                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="${editUrl}">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                    <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="${deleteUrl}">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
+                table += '</tbody></table>';
+                return table;
+            }
+
+            const tableSelectors = ['#mahasiswa-table', '#dosen-table', '#matakuliah-table', '#khs-table', '#ktm-table'];
             tableSelectors.forEach(function(selector) {
                 if ($(selector).length) {
                     $(selector).DataTable({
@@ -259,6 +297,29 @@ $baseHref = rtrim(BASE_URL, '/') . '/';
                     });
                 }
             });
+
+            if ($('#krs-table').length) {
+                var table = $('#krs-table').DataTable({
+                    pageLength: 10,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true
+                });
+
+                $('#krs-table tbody').on('click', 'button.details-control', function() {
+                    var tr = $(this).closest('tr');
+                    var row = table.row(tr);
+                    var details = JSON.parse(tr.attr('data-details'));
+
+                    if (row.child.isShown()) {
+                        row.child.hide();
+                        tr.removeClass('details');
+                    } else {
+                        row.child(format(details)).show();
+                        tr.addClass('details');
+                    }
+                });
+            }
         });
     </script>
 

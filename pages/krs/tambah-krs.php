@@ -29,7 +29,7 @@ unset($_SESSION['tambah_krs_error'], $_SESSION['tambah_krs_old']);
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?php echo $base_url; ?>pages/krs/proses.php">
+        <form method="POST" action="<?php echo page_url('krs/proses-tambah'); ?>">
             <div class="mb-3">
                 <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                 <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>
@@ -42,16 +42,23 @@ unset($_SESSION['tambah_krs_error'], $_SESSION['tambah_krs_old']);
                 </select>
             </div>
             <div class="mb-3">
-                <label for="id_matkul" class="form-label">Mata Kuliah</label>
-                <select class="form-select" id="id_matkul" name="id_matkul" required>
-                    <option value="" disabled <?php echo empty($old['id_matkul']) ? 'selected' : ''; ?>>Pilih Mata Kuliah</option>
+                <label class="form-label">Mata Kuliah</label>
+                <div class="row">
                     <?php foreach ($matakuliahList as $matkul) : ?>
-                        <?php $matkulLabel = $matkul['kode_matkul'] . ' - ' . $matkul['nama_matkul'] . ' (' . (int)$matkul['sks'] . ' SKS)'; ?>
-                        <option value="<?php echo $matkul['id_matkul']; ?>" <?php echo ($old['id_matkul'] == $matkul['id_matkul']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($matkulLabel); ?>
-                        </option>
+                        <?php
+                        $matkulLabel = $matkul['kode_matkul'] . ' - ' . $matkul['nama_matkul'] . ' (' . (int)$matkul['sks'] . ' SKS)';
+                        $isChecked = !empty($old['id_matkul']) && in_array($matkul['id_matkul'], (array)$old['id_matkul']);
+                        ?>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="id_matkul[]" value="<?php echo $matkul['id_matkul']; ?>" id="matkul_<?php echo $matkul['id_matkul']; ?>" <?php echo $isChecked ? 'checked' : ''; ?>>
+                                <label class="form-check-label" for="matkul_<?php echo $matkul['id_matkul']; ?>">
+                                    <?php echo htmlspecialchars($matkulLabel); ?>
+                                </label>
+                            </div>
+                        </div>
                     <?php endforeach; ?>
-                </select>
+                </div>
             </div>
             <div class="mb-3">
                 <label for="semester" class="form-label">Semester</label>

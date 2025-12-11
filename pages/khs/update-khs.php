@@ -2,7 +2,8 @@
 include 'config/koneksi.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$errorMessage = '';
+$errorMessage = $_SESSION['edit_khs_error'] ?? '';
+unset($_SESSION['edit_khs_error']);
 $khs = null;
 $allowedStatus = ['Lulus', 'Tidak Lulus', 'Remedial'];
 
@@ -20,94 +21,21 @@ if ($id > 0) {
 $mahasiswaList = $pdo->query("SELECT id_mahasiswa, nim, nama FROM mahasiswa ORDER BY nama ASC")->fetchAll(PDO::FETCH_ASSOC);
 $matakuliahList = $pdo->query("SELECT id_matkul, kode_matkul, nama_matkul, sks FROM matakuliah ORDER BY nama_matkul ASC")->fetchAll(PDO::FETCH_ASSOC);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $khs) {
-    $idMahasiswa = $_POST['id_mahasiswa'] ?? '';
-    $idMatkul = $_POST['id_matkul'] ?? '';
-    $semester = trim($_POST['semester'] ?? '');
-    $tahunAjaran = trim($_POST['tahun_ajaran'] ?? '');
-    $nilaiAngka = trim($_POST['nilai_angka'] ?? '');
-    $status = $_POST['status'] ?? 'Lulus';
-    $catatan = trim($_POST['catatan'] ?? '');
-
-    if (!in_array($status, $allowedStatus, true)) {
-        $status = 'Lulus';
+function convertGrade(float $nilai): string
+{
+    if ($nilai >= 85) {
+        return 'A';
     }
-
-    $khs['id_mahasiswa'] = $idMahasiswa;
-    $khs['id_matkul'] = $idMatkul;
-    $khs['semester'] = $semester;
-    $khs['tahun_ajaran'] = $tahunAjaran;
-    $khs['nilai_angka'] = $nilaiAngka;
-    $khs['status'] = $status;
-    $khs['catatan'] = $catatan;
-
-    try {
-        if (!$idMahasiswa || !$idMatkul || !$semester || !$tahunAjaran || $nilaiAngka === '') {
-            throw new RuntimeException('Semua field wajib diisi.');
-        }
-
-        if (!preg_match('/^\d+$/', $semester) || (int)$semester < 1 || (int)$semester > 14) {
-            throw new RuntimeException('Semester harus berupa angka antara 1 sampai 14.');
-        }
-
-        if (!preg_match('/^\d{4}\/\d{4}$/', $tahunAjaran)) {
-            throw new RuntimeException('Format tahun ajaran tidak valid. Contoh: 2024/2025.');
-        }
-
-        if (!is_numeric($nilaiAngka) || $nilaiAngka < 0 || $nilaiAngka > 100) {
-            throw new RuntimeException('Nilai angka harus berada di rentang 0 - 100.');
-        }
-
-        $cekMahasiswa = $pdo->prepare("SELECT COUNT(*) FROM mahasiswa WHERE id_mahasiswa = :id");
-        $cekMahasiswa->execute([':id' => $idMahasiswa]);
-        if ($cekMahasiswa->fetchColumn() == 0) {
-            throw new RuntimeException('Mahasiswa tidak ditemukan.');
-        }
-
-        $cekMatkul = $pdo->prepare("SELECT COUNT(*) FROM matakuliah WHERE id_matkul = :id");
-        $cekMatkul->execute([':id' => $idMatkul]);
-        if ($cekMatkul->fetchColumn() == 0) {
-            throw new RuntimeException('Mata kuliah tidak ditemukan.');
-        }
-
-        $nilaiHuruf = convertGrade((float)$nilaiAngka);
-
-        $update = $pdo->prepare(
-            "UPDATE khs
-             SET id_mahasiswa = :id_mahasiswa,
-                 id_matkul = :id_matkul,
-                 semester = :semester,
-                 tahun_ajaran = :tahun_ajaran,
-                 nilai_angka = :nilai_angka,
-                 nilai_huruf = :nilai_huruf,
-                 status = :status,
-                 catatan = :catatan
-             WHERE id_khs = :id"
-        );
-
-        $update->execute([
-            ':id_mahasiswa' => $idMahasiswa,
-            ':id_matkul' => $idMatkul,
-            ':semester' => (int)$semester,
-            ':tahun_ajaran' => $tahunAjaran,
-            ':nilai_angka' => $nilaiAngka,
-            ':nilai_huruf' => $nilaiHuruf,
-            ':status' => $status,
-            ':catatan' => $catatan,
-            ':id' => $id,
-        ]);
-
-        $redirectUrl = page_url('khs/khs');
-        if (!headers_sent()) {
-            header('Location: ' . $redirectUrl);
-            exit;
-        } else {
-            echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
-            exit;
-        }
-    } catch (Throwable $e) {
-        $errorMessage = $e->getMessage();
+    if ($nilai >= 70) {
+        return 'B';
     }
+    if ($nilai >= 55) {
+        return 'C';
+    }
+    if ($nilai >= 40) {
+        return 'D';
+    }
+    return 'E';
 }
 ?>
 
@@ -122,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $khs) {
         <?php endif; ?>
 
         <?php if ($khs) : ?>
-            <form method="POST">
+            <form method="POST" action="<?php echo page_url('khs/proses-update'); ?>">
+                <input type="hidden" name="id" value="<?php echo htmlspecialchars((string)$id); ?>">
                 <div class="mb-3">
                     <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                     <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>
@@ -194,21 +123,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $khs) {
         <?php endif; ?>
     </div>
 </div>
-
-<?php
-function convertGrade(float $nilai): string
-{
-    if ($nilai >= 85) {
-        return 'A';
-    }
-    if ($nilai >= 70) {
-        return 'B';
-    }
-    if ($nilai >= 55) {
-        return 'C';
-    }
-    if ($nilai >= 40) {
-        return 'D';
-    }
-    return 'E';
-}

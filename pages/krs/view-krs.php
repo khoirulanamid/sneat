@@ -1,9 +1,14 @@
 <?php
-include 'config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$data = null;
+$id_mahasiswa = isset($_GET['id_mahasiswa']) ? (int)$_GET['id_mahasiswa'] : 0;
+$semester = isset($_GET['semester']) ? (int)$_GET['semester'] : 0;
+$tahun_ajaran = isset($_GET['tahun_ajaran']) ? $_GET['tahun_ajaran'] : '';
 
+$logoSrc = asset_url('public/assets/img/logo-unuha.png');
+
+$single = null;
 if ($id > 0) {
     $stmt = $pdo->prepare(
         "SELECT krs.*, mahasiswa.nim, mahasiswa.nama, mahasiswa.jurusan, matakuliah.kode_matkul, matakuliah.nama_matkul, matakuliah.sks
@@ -13,14 +18,42 @@ if ($id > 0) {
          WHERE krs.id_krs = :id"
     );
     $stmt->execute([':id' => $id]);
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $single = $stmt->fetch(PDO::FETCH_ASSOC);
 }
-$logoSrc = asset_url('public/assets/img/logo-unuha.png');
+
+// Group entries
+$groupEntries = [];
+$student = null;
+if (!$single && $id_mahasiswa && $semester && $tahun_ajaran) {
+    $stmt = $pdo->prepare(
+        "SELECT krs.*, m.nim, m.nama, m.jurusan, mk.kode_matkul, mk.nama_matkul, mk.sks
+         FROM krs
+         LEFT JOIN mahasiswa m ON krs.id_mahasiswa = m.id_mahasiswa
+         LEFT JOIN matakuliah mk ON krs.id_matkul = mk.id_matkul
+         WHERE krs.id_mahasiswa = :id_mahasiswa
+           AND krs.semester = :semester
+           AND krs.tahun_ajaran = :tahun_ajaran
+         ORDER BY mk.nama_matkul ASC"
+    );
+    $stmt->execute([
+        ':id_mahasiswa' => $id_mahasiswa,
+        ':semester' => $semester,
+        ':tahun_ajaran' => $tahun_ajaran,
+    ]);
+    $groupEntries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($groupEntries)) {
+        $student = [
+            'nama' => $groupEntries[0]['nama'],
+            'nim' => $groupEntries[0]['nim'],
+            'jurusan' => $groupEntries[0]['jurusan']
+        ];
+    }
+}
 ?>
 
 <h4 class="fw-bold"><span class="text-muted fw-light">KRS /</span> Detail KRS</h4>
 
-<?php if ($data) : ?>
+<?php if ($single) : ?>
     <?php $recordedAt = !empty($data['tanggal_pengisian']) ? date('d/m/Y H:i', strtotime($data['tanggal_pengisian'])) : '-'; ?>
     <style>
         .detail-card {
@@ -105,7 +138,68 @@ $logoSrc = asset_url('public/assets/img/logo-unuha.png');
     </style>
 <?php endif; ?>
 
-<div class="card">
+<?php if (!empty($groupEntries)) : ?>
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-3">
+                <h5><?php echo htmlspecialchars($student['nama'] ?? '-'); ?></h5>
+                <div class="text-muted">NIM: <?php echo htmlspecialchars($student['nim'] ?? '-'); ?> &middot; Jurusan: <?php echo htmlspecialchars($student['jurusan'] ?? '-'); ?></div>
+                <div class="mt-2">Semester: <strong><?php echo htmlspecialchars($semester); ?></strong> &middot; Tahun Ajaran: <strong><?php echo htmlspecialchars($tahun_ajaran); ?></strong></div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Kode MK</th>
+                            <th>Mata Kuliah</th>
+                            <th>SKS</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $i = 1; $totalSks = 0; foreach ($groupEntries as $entry) : $totalSks += (int)($entry['sks'] ?? 0); ?>
+                            <tr>
+                                <td><?php echo $i++; ?></td>
+                                <td><?php echo htmlspecialchars($entry['kode_matkul'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($entry['nama_matkul'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($entry['sks'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($entry['status'] ?? '-'); ?></td>
+                                <td>
+                                    <!-- Edit single entry -->
+                                    <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?php echo page_url('krs/update-krs') . '?id=' . urlencode($entry['id_krs']); ?>">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                    <!-- Delete single entry -->
+                                    <a class="btn btn-icon btn-outline-danger btn-sm" title="Hapus" href="<?php echo page_url('krs/delete-krs') . '?id=' . urlencode($entry['id_krs']); ?>">
+                                        <i class="bx bx-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Total SKS</strong></td>
+                            <td><strong><?php echo $totalSks; ?></strong></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                <a href="<?php echo page_url('krs/krs'); ?>" class="btn btn-secondary">Kembali</a>
+                <?php $deleteGroupUrl = page_url('krs/delete-krs') . '?id_mahasiswa=' . urlencode($id_mahasiswa) . '&semester=' . urlencode($semester) . '&tahun_ajaran=' . urlencode($tahun_ajaran); ?>
+                <a href="<?php echo $deleteGroupUrl; ?>" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus semua entri KRS untuk mahasiswa ini pada semester dan tahun ajaran ini?');">Hapus Semua</a>
+            </div>
+        </div>
+    </div>
+<?php elseif (!$single) : ?>
+    <div class="alert alert-warning" role="alert">Data KRS tidak ditemukan.</div>
+    <a href="<?php echo page_url('krs/krs'); ?>" class="btn btn-secondary">Kembali</a>
+<?php endif; ?>
+
     <div class="card-body">
         <?php if ($data) : ?>
             <div class="detail-card mb-3">

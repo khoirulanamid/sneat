@@ -2,7 +2,8 @@
 include 'config/koneksi.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$errorMessage = '';
+$errorMessage = $_SESSION['edit_ktm_error'] ?? '';
+unset($_SESSION['edit_ktm_error']);
 $ktm = null;
 $allowedStatus = ['Aktif', 'Tidak Aktif', 'Hilang', 'Rusak'];
 
@@ -23,124 +24,6 @@ if ($id > 0) {
 }
 
 $mahasiswaList = $pdo->query("SELECT id_mahasiswa, nim, nama FROM mahasiswa ORDER BY nama ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
-    $idMahasiswa = $_POST['id_mahasiswa'] ?? '';
-    $nomorKartu = trim($_POST['nomor_kartu'] ?? '');
-    $tglTerbit = $_POST['tgl_terbit'] ?? '';
-    $masaBerlaku = $_POST['masa_berlaku'] ?? '';
-    $status = $_POST['status'] ?? 'Aktif';
-    $keterangan = trim($_POST['keterangan'] ?? '');
-    $fotoKartuLama = trim($_POST['foto_kartu_lama'] ?? '');
-
-    if (!in_array($status, $allowedStatus, true)) {
-        $status = 'Aktif';
-    }
-
-    $ktm['id_mahasiswa'] = $idMahasiswa;
-    $ktm['nomor_kartu'] = $nomorKartu;
-    $ktm['tgl_terbit'] = $tglTerbit;
-    $ktm['masa_berlaku'] = $masaBerlaku;
-    $ktm['status'] = $status;
-    $ktm['keterangan'] = $keterangan;
-    $ktm['foto_kartu'] = $fotoKartuLama;
-
-    try {
-        if (!$idMahasiswa || !$nomorKartu || !$tglTerbit || !$masaBerlaku) {
-            throw new RuntimeException('Mahasiswa, nomor kartu, tanggal terbit, dan masa berlaku wajib diisi.');
-        }
-
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tglTerbit) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $masaBerlaku)) {
-            throw new RuntimeException('Format tanggal tidak valid.');
-        }
-
-        if (strtotime($masaBerlaku) < strtotime($tglTerbit)) {
-            throw new RuntimeException('Masa berlaku tidak boleh lebih awal dari tanggal terbit.');
-        }
-
-        $cekMahasiswa = $pdo->prepare("SELECT COUNT(*) FROM mahasiswa WHERE id_mahasiswa = :id");
-        $cekMahasiswa->execute([':id' => $idMahasiswa]);
-        if ($cekMahasiswa->fetchColumn() == 0) {
-            throw new RuntimeException('Mahasiswa tidak ditemukan.');
-        }
-
-        $cekNomor = $pdo->prepare("SELECT COUNT(*) FROM ktm WHERE nomor_kartu = :nomor AND id_ktm <> :current");
-        $cekNomor->execute([
-            ':nomor' => $nomorKartu,
-            ':current' => $id,
-        ]);
-        if ($cekNomor->fetchColumn() > 0) {
-            throw new RuntimeException('Nomor KTM sudah terdaftar.');
-        }
-
-        // Handle upload foto jika ada penggantian
-        if (isset($_FILES['foto_kartu']) && $_FILES['foto_kartu']['error'] !== UPLOAD_ERR_NO_FILE) {
-            $file = $_FILES['foto_kartu'];
-            if ($file['error'] !== UPLOAD_ERR_OK) {
-                throw new RuntimeException('Upload foto gagal. Silakan coba lagi.');
-            }
-
-            $allowedExt = ['jpg', 'jpeg', 'png', 'webp'];
-            $maxSize = 2 * 1024 * 1024; // 2MB
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-            if (!in_array($ext, $allowedExt, true)) {
-                throw new RuntimeException('Format foto harus jpg, jpeg, png, atau webp.');
-            }
-            if ($file['size'] > $maxSize) {
-                throw new RuntimeException('Ukuran foto maksimal 2MB.');
-            }
-
-            $uploadDir = __DIR__ . '/../../public/uploads/ktm/';
-            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true)) {
-                throw new RuntimeException('Gagal membuat folder upload.');
-            }
-
-            $newName = 'ktm-' . time() . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
-            $targetPath = $uploadDir . $newName;
-
-            if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
-                throw new RuntimeException('Gagal menyimpan foto KTM.');
-            }
-
-            $ktm['foto_kartu'] = 'public/uploads/ktm/' . $newName;
-        }
-
-        $update = $pdo->prepare(
-            "UPDATE ktm
-             SET id_mahasiswa = :id_mahasiswa,
-                 nomor_kartu = :nomor_kartu,
-                 tgl_terbit = :tgl_terbit,
-                 masa_berlaku = :masa_berlaku,
-                 status = :status,
-                 foto_kartu = :foto_kartu,
-                 keterangan = :keterangan
-             WHERE id_ktm = :id"
-        );
-
-        $update->execute([
-            ':id_mahasiswa' => $idMahasiswa,
-            ':nomor_kartu' => $nomorKartu,
-            ':tgl_terbit' => $tglTerbit,
-            ':masa_berlaku' => $masaBerlaku,
-            ':status' => $status,
-            ':foto_kartu' => $ktm['foto_kartu'],
-            ':keterangan' => $keterangan,
-            ':id' => $id,
-        ]);
-
-        $redirectUrl = page_url('ktm/ktm');
-        if (!headers_sent()) {
-            header('Location: ' . $redirectUrl);
-        } else {
-            // Jika layout sudah mengirim output, gunakan redirect via JS untuk menghindari warning header
-            echo '<script>window.location.href = ' . json_encode($redirectUrl) . ';</script>';
-        }
-        exit;
-    } catch (Throwable $e) {
-        $errorMessage = $e->getMessage();
-    }
-}
 ?>
 
 <h4 class="fw-bold"><span class="text-muted fw-light">KTM /</span> Edit KTM</h4>
@@ -154,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ktm) {
         <?php endif; ?>
 
         <?php if ($ktm) : ?>
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" action="<?php echo page_url('ktm/proses-update'); ?>" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="<?php echo htmlspecialchars((string)$id); ?>">
                 <div class="mb-3">
                     <label for="id_mahasiswa" class="form-label">Mahasiswa</label>
                     <select class="form-select" id="id_mahasiswa" name="id_mahasiswa" required>

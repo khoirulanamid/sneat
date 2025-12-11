@@ -5,7 +5,12 @@ if (session_status() === PHP_SESSION_NONE) {
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: ../../index.php?page=matakuliah/tambah-matakuliah");
+    $redir = '../../index.php?page=matakuliah/tambah-matakuliah';
+    if (!headers_sent()) {
+        header("Location: " . $redir);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($redir) . ';</script>';
     exit;
 }
 
@@ -16,7 +21,6 @@ $semester = trim($_POST['semester'] ?? '');
 $idDosen = $_POST['id_dosen'] ?? '';
 $jenisMatkul = trim($_POST['jenis_matkul'] ?? '');
 $status = $_POST['status'] ?? '';
-
 $idDosen = $idDosen === '' ? null : $idDosen;
 
 $old = [
@@ -49,7 +53,12 @@ if ($kodeMatkul && $namaMatkul && $sks && $semester && $jenisMatkul && $status) 
         ]);
 
         unset($_SESSION['tambah_matakuliah_error'], $_SESSION['tambah_matakuliah_old']);
-        header("Location: ../../index.php?page=matakuliah/matakuliah");
+        $ok = '../../index.php?page=matakuliah/matakuliah';
+        if (!headers_sent()) {
+            header("Location: " . $ok);
+            exit;
+        }
+        echo '<script>window.location.href = ' . json_encode($ok) . ';</script>';
         exit;
     } catch (PDOException $e) {
         $errorMessage = 'Gagal menambah data: ' . $e->getMessage();
@@ -61,5 +70,10 @@ if ($kodeMatkul && $namaMatkul && $sks && $semester && $jenisMatkul && $status) 
 $_SESSION['tambah_matakuliah_error'] = $errorMessage;
 $_SESSION['tambah_matakuliah_old'] = $old;
 
-header("Location: ../../index.php?page=matakuliah/tambah-matakuliah");
+$redir = '../../index.php?page=matakuliah/tambah-matakuliah';
+if (!headers_sent()) {
+    header("Location: " . $redir);
+    exit;
+}
+echo '<script>window.location.href = ' . json_encode($redir) . ';</script>';
 exit;

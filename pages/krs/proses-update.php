@@ -5,10 +5,16 @@ if (session_status() === PHP_SESSION_NONE) {
 include_once __DIR__ . '/../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../../index.php?page=krs/tambah-krs');
+    $redir = page_url('krs/krs');
+    if (!headers_sent()) {
+        header('Location: ' . $redir);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($redir) . ';</script>';
     exit;
 }
 
+$id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 $idMahasiswa = $_POST['id_mahasiswa'] ?? '';
 $idMatkul = $_POST['id_matkul'] ?? '';
 $semester = trim($_POST['semester'] ?? '');
@@ -19,18 +25,10 @@ if (!in_array($status, $allowedStatus, true)) {
     $status = 'Belum Disetujui';
 }
 
-$old = [
-    'id_mahasiswa' => $idMahasiswa,
-    'id_matkul' => $idMatkul,
-    'semester' => $semester,
-    'tahun_ajaran' => $tahunAjaran,
-    'status' => $status,
-];
-
-$errorMessage = '';
+$redirect = page_url('krs/update-krs') . '?id=' . urlencode((string)$id);
 
 try {
-    if (!$idMahasiswa || !$idMatkul || !$semester || !$tahunAjaran || !$status) {
+    if (!$id || !$idMahasiswa || !$idMatkul || !$semester || !$tahunAjaran) {
         throw new RuntimeException('Semua field wajib diisi.');
     }
 
@@ -54,28 +52,38 @@ try {
         throw new RuntimeException('Mata kuliah tidak ditemukan.');
     }
 
-    $stmt = $pdo->prepare(
-        "INSERT INTO krs (id_mahasiswa, id_matkul, semester, tahun_ajaran, tanggal_pengisian, status)
-         VALUES (:id_mahasiswa, :id_matkul, :semester, :tahun_ajaran, NOW(), :status)"
+    $update = $pdo->prepare(
+        "UPDATE krs
+         SET id_mahasiswa = :id_mahasiswa,
+             id_matkul = :id_matkul,
+             semester = :semester,
+             tahun_ajaran = :tahun_ajaran,
+             status = :status
+         WHERE id_krs = :id"
     );
 
-    $stmt->execute([
+    $update->execute([
         ':id_mahasiswa' => $idMahasiswa,
         ':id_matkul' => $idMatkul,
         ':semester' => (int)$semester,
         ':tahun_ajaran' => $tahunAjaran,
         ':status' => $status,
+        ':id' => $id,
     ]);
 
-    unset($_SESSION['tambah_krs_error'], $_SESSION['tambah_krs_old']);
-    header('Location: ../../index.php?page=krs/krs');
+    $ok = page_url('krs/krs');
+    if (!headers_sent()) {
+        header('Location: ' . $ok);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($ok) . ';</script>';
     exit;
 } catch (Throwable $e) {
-    $errorMessage = $e->getMessage();
+    $_SESSION['edit_krs_error'] = $e->getMessage();
+    if (!headers_sent()) {
+        header('Location: ' . $redirect);
+        exit;
+    }
+    echo '<script>window.location.href = ' . json_encode($redirect) . ';</script>';
+    exit;
 }
-
-$_SESSION['tambah_krs_error'] = $errorMessage;
-$_SESSION['tambah_krs_old'] = $old;
-
-header('Location: ../../index.php?page=krs/tambah-krs');
-exit;

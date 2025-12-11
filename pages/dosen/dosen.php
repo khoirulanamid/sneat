@@ -14,7 +14,7 @@ try {
 
 <div class="card">
     <div class="card-body">
-        <a href="<?= $base_url ?>dosen/tambah-dosen" class="btn btn-primary mb-3">+ Tambah Dosen</a>
+        <a href="<?= page_url('dosen/tambah-dosen'); ?>" class="btn btn-primary mb-3">+ Tambah Dosen</a>
 
         <div class="card">
             <div class="table-responsive text-nowrap">
@@ -53,7 +53,7 @@ try {
                                             <a class="btn btn-icon btn-outline-primary btn-sm" title="View" href="<?= page_url('dosen/view-dosen'); ?>?id=<?= urlencode($dosen['id_dosen']); ?>">
                                                 <i class="bx bx-show-alt"></i>
                                             </a>
-                                            <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?= page_url('dosen/edit-dosen'); ?>?id=<?= urlencode($dosen['id_dosen']); ?>">
+                                            <a class="btn btn-icon btn-outline-success btn-sm" title="Edit" href="<?= page_url('dosen/update-dosen'); ?>?id=<?= urlencode($dosen['id_dosen']); ?>">
                                                 <i class="bx bx-edit-alt"></i>
                                             </a>
                                             <a class="btn btn-icon btn-outline-danger btn-sm" title="Delete" href="<?= page_url('dosen/delete-dosen'); ?>?id=<?= urlencode($dosen['id_dosen']); ?>">
