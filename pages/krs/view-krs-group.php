@@ -1,5 +1,5 @@
 <?php
-include '../../config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 $id_mahasiswa = isset($_GET['id_mahasiswa']) ? (int)$_GET['id_mahasiswa'] : 0;
 $semester = isset($_GET['semester']) ? (int)$_GET['semester'] : 0;
