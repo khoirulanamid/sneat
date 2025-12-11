@@ -101,9 +101,10 @@ $no = 1;
                                     $baseView = page_url('krs/view-krs');
                                     $query = '?id_mahasiswa=' . urlencode($id_mahasiswa) . '&semester=' . urlencode($semester) . '&tahun_ajaran=' . urlencode($tahun_ajaran);
                                     $view_url = $baseView . $query;
-                                    // For simplicity, Edit and Delete also go to the group view where actions are available
-                                    $edit_url = $baseView . $query;
-                                    $delete_url = $baseView . $query;
+                                    // Edit goes to the add-form (tambah-krs) prefilled for the group
+                                    $edit_url = page_url('krs/tambah-krs') . $query;
+                                    // Delete goes to delete-krs which supports group deletion when query params present
+                                    $delete_url = page_url('krs/delete-krs') . $query;
                                     ?>
                                     <a class="btn btn-icon btn-outline-primary btn-sm" title="View Group" href="<?php echo $view_url; ?>">
                                         <i class="bx bx-show-alt"></i>
