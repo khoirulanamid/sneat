@@ -1,6 +1,6 @@
 <?php
 if (!function_exists('asset_url')) {
-    include_once 'config/base_url.php';
+    include_once __DIR__ . '/../../config/base_url.php';
 }
 $baseHref = rtrim($base_url, '/') . '/';
 ?>

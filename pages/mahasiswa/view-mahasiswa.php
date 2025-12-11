@@ -1,5 +1,5 @@
 <?php
-include 'config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 $nim = isset($_GET['nim']) ? trim($_GET['nim']) : '';
 $mahasiswa = null;

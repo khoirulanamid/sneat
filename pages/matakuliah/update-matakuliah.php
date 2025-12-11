@@ -1,5 +1,5 @@
 <?php
-include 'config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 $kodeMatkul = isset($_GET['kode']) ? trim($_GET['kode']) : '';
 $errorMessage = $_SESSION['edit_matkul_error'] ?? '';

@@ -1,5 +1,5 @@
 <?php
-include 'config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $errorMessage = $_SESSION['edit_khs_error'] ?? '';

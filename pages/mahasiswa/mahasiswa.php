@@ -1,5 +1,5 @@
 <?php
-include 'config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 $query = "SELECT * FROM mahasiswa ORDER BY nama ASC";
 $stmt = $pdo->query($query);

@@ -1,6 +1,6 @@
 <?php
 // Sertakan file koneksi database
-include 'config/koneksi.php';
+include_once __DIR__ . '/koneksi.php';
 
 // Query untuk mengambil semua data dari tabel dosen
 $query = "SELECT * FROM dosen";

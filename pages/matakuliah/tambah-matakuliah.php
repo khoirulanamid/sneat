@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-include 'config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 // Ambil daftar dosen untuk dropdown pengampu
 $dosenList = [];

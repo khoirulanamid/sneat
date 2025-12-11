@@ -1,5 +1,5 @@
 <?php
-include 'config/koneksi.php';
+include_once __DIR__ . '/../../config/koneksi.php';
 
 $query = "SELECT khs.*, mahasiswa.nim, mahasiswa.nama, matakuliah.nama_matkul, matakuliah.kode_matkul, matakuliah.sks
           FROM khs
